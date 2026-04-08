@@ -1,8 +1,8 @@
-import { marketingContent } from '@/data/site-content';
-import type { ContentProvider, MarketingContent } from '@/lib/content/types';
+import { marketingContentByLocale } from '@/data/site-content';
+import type { ContentProvider, Locale, MarketingContent } from '@/lib/content/types';
 
 export class StaticContentProvider implements ContentProvider {
-  async getMarketingContent(): Promise<MarketingContent> {
-    return marketingContent;
+  async getMarketingContent(locale: Locale = 'es'): Promise<MarketingContent> {
+    return marketingContentByLocale[locale] ?? marketingContentByLocale.es;
   }
 }

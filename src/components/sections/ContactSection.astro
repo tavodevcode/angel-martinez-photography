@@ -1,6 +1,7 @@
 ---
 import { Picture } from 'astro:assets';
 import ctaImage from '@/assets/images/cta-image.jpg';
+import { getLocaleFromPath } from '@/lib/i18n';
 import type { ContactContent, NavItem } from '@/lib/content/types';
 
 interface Props {
@@ -9,19 +10,24 @@ interface Props {
 }
 
 const { contact, nav = [] } = Astro.props;
+const locale = getLocaleFromPath(Astro.url.pathname);
+const navLabel = locale === 'en' ? 'Navigation' : 'Navegacion';
+const readyCopy = locale === 'en' ? 'Ready to create something extraordinary?' : 'Listo para crear algo extraordinario?';
+const socialsLabel = locale === 'en' ? 'Socials' : 'Redes';
+const talkAlt = locale === 'en' ? "Let's talk" : 'Hablemos';
 
 const socials = [
-  { label: 'Instagram', href: '#' },
-  { label: 'Behance', href: '#' },
-  { label: 'Facebook', href: '#' },
-  { label: 'LinkedIn', href: '#' },
+  { label: 'Instagram', href: 'https://instagram.com' },
+  { label: 'Behance', href: 'https://behance.net' },
+  { label: 'Facebook', href: 'https://facebook.com' },
+  { label: 'LinkedIn', href: 'https://linkedin.com' },
 ];
 ---
 
 <section class="section-rule px-6 py-16 lg:px-10 lg:py-24">
   <div class="mx-auto grid w-full max-w-[1440px] gap-10 lg:grid-cols-[220px_1fr_220px] lg:items-end">
     <div>
-      <p class="mb-5 text-[10px] uppercase tracking-[0.2em] text-white/55">Navigation</p>
+      <p class="mb-5 text-[10px] uppercase tracking-[0.2em] text-white/55">{navLabel}</p>
       <nav class="space-y-2 text-sm text-white/65">
         {nav.map((item) => (
           <a href={item.href} class="block transition hover:text-white">{item.label}</a>
@@ -30,13 +36,13 @@ const socials = [
     </div>
 
     <div class="text-center">
-      <p class="text-sm text-white/55">Ready to create something extraordinary?</p>
+      <p class="text-sm text-white/55">{readyCopy}</p>
       <h2 class="mt-2 font-display text-6xl font-semibold text-white sm:text-7xl lg:text-8xl">{contact.title}</h2>
 
       <a href={`mailto:${contact.email}`} class="group relative mt-7 inline-block overflow-hidden border border-white/20">
         <Picture
           src={ctaImage}
-          alt="Let's talk"
+          alt={talkAlt}
           widths={[420, 760, 980]}
           sizes="(max-width: 1024px) 70vw, 26vw"
           formats={['avif', 'webp']}
@@ -50,10 +56,10 @@ const socials = [
     </div>
 
     <div class="lg:text-right">
-      <p class="mb-5 text-[10px] uppercase tracking-[0.2em] text-white/55">Socials</p>
+      <p class="mb-5 text-[10px] uppercase tracking-[0.2em] text-white/55">{socialsLabel}</p>
       <nav class="space-y-2 text-sm text-white/65">
         {socials.map((item) => (
-          <a href={item.href} class="block transition hover:text-white">{item.label}</a>
+          <a href={item.href} target="_blank" rel="noreferrer" class="block transition hover:text-white">{item.label}</a>
         ))}
       </nav>
     </div>

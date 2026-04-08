@@ -10,16 +10,16 @@ import ServicesSection from '@/components/sections/ServicesSection.astro';
 import { createContentProvider } from '@/lib/content';
 
 const provider = createContentProvider();
-const content = await provider.getMarketingContent('es');
+const content = await provider.getMarketingContent('en');
 ---
 
 <SiteScaffold
-  title={`${content.brand} | Inicio`}
-  description="Fotografía editorial con rendimiento web optimizado y navegación cinematográfica."
+  title={`${content.brand} | Home`}
+  description="Editorial and commercial photography with optimized performance and seamless transitions."
   brand={content.brand}
   nav={content.nav}
-  locale="es"
-  homeHref="/"
+  locale="en"
+  homeHref="/en/"
   ctaLabel={content.hero.ctaLabel}
   ctaHref={content.hero.ctaHref}
   pageTone="home"
