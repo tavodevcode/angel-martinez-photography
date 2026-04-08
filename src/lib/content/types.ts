@@ -1,5 +1,7 @@
 import type { ImageMetadata } from 'astro';
 
+export type Locale = 'es' | 'en';
+
 export interface NavItem {
   label: string;
   href: string;
@@ -68,5 +70,5 @@ export interface MarketingContent {
 }
 
 export interface ContentProvider {
-  getMarketingContent(): Promise<MarketingContent>;
+  getMarketingContent(locale?: Locale): Promise<MarketingContent>;
 }
