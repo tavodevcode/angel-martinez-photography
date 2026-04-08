@@ -1,0 +1,39 @@
+---
+import { Picture } from 'astro:assets';
+import type { ServiceItem } from '@/lib/content/types';
+
+interface Props {
+  services: ServiceItem[];
+}
+
+const { services } = Astro.props;
+const featured = services[2] ?? services[0];
+---
+
+<section class="section-rule px-6 py-16 lg:px-10 lg:py-24">
+  <div class="mx-auto w-full max-w-[1440px]">
+    <p class="mb-8 text-[10px] uppercase tracking-[0.22em] text-white/55">* Services</p>
+
+    <div class="grid gap-10 lg:grid-cols-[320px_1fr] lg:items-start">
+      <div class="overflow-hidden border border-white/10">
+        <Picture
+          src={featured.image}
+          alt={featured.title}
+          widths={[520, 760, 980]}
+          sizes="(max-width: 1024px) 100vw, 28vw"
+          formats={['avif', 'webp']}
+          loading="lazy"
+          class="h-[320px] w-full object-cover lg:h-[460px]"
+        />
+      </div>
+
+      <ul class="space-y-1">
+        {services.map((service) => (
+          <li class="font-display text-[44px] font-semibold italic leading-[0.92] text-white/16 transition hover:text-white/86 md:text-[58px] lg:text-[72px]">
+            {service.title}
+          </li>
+        ))}
+      </ul>
+    </div>
+  </div>
+</section>

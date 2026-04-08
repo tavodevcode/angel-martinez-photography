@@ -1,0 +1,27 @@
+---
+import SiteScaffold from '@/components/layout/SiteScaffold.astro';
+import BrandStripSection from '@/components/sections/BrandStripSection.astro';
+import ContactSection from '@/components/sections/ContactSection.astro';
+import PageHeader from '@/components/sections/PageHeader.astro';
+import PortfolioSection from '@/components/sections/PortfolioSection.astro';
+import { createContentProvider } from '@/lib/content';
+
+const provider = createContentProvider();
+const content = await provider.getMarketingContent();
+---
+
+<SiteScaffold
+  title={`${content.brand} | Portafolio`}
+  description="Selección de proyectos fotográficos con enfoque editorial y comercial."
+  brand={content.brand}
+  nav={content.nav}
+  pageTone="inner"
+>
+  <PageHeader
+    title="Portafolio"
+    subtitle="Casos seleccionados para mostrar dirección de arte, lenguaje visual y consistencia de entrega."
+  />
+  <PortfolioSection portfolio={content.portfolio} />
+  <BrandStripSection brands={content.brands} />
+  <ContactSection contact={content.contact} nav={content.nav} />
+</SiteScaffold>

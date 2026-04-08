@@ -1,0 +1,30 @@
+---
+import SiteScaffold from '@/components/layout/SiteScaffold.astro';
+import AboutSection from '@/components/sections/AboutSection.astro';
+import BrandStripSection from '@/components/sections/BrandStripSection.astro';
+import ContactSection from '@/components/sections/ContactSection.astro';
+import GallerySection from '@/components/sections/GallerySection.astro';
+import HeroSection from '@/components/sections/HeroSection.astro';
+import PortfolioSection from '@/components/sections/PortfolioSection.astro';
+import ServicesSection from '@/components/sections/ServicesSection.astro';
+import { createContentProvider } from '@/lib/content';
+
+const provider = createContentProvider();
+const content = await provider.getMarketingContent();
+---
+
+<SiteScaffold
+  title={`${content.brand} | Inicio`}
+  description="Fotografía editorial con rendimiento web optimizado y navegación cinematográfica."
+  brand={content.brand}
+  nav={content.nav}
+  pageTone="home"
+>
+  <HeroSection hero={content.hero} />
+  <AboutSection about={content.about} />
+  <GallerySection gallery={content.gallery} />
+  <BrandStripSection brands={content.brands} />
+  <ServicesSection services={content.services} />
+  <PortfolioSection portfolio={content.portfolio} />
+  <ContactSection contact={content.contact} nav={content.nav} />
+</SiteScaffold>

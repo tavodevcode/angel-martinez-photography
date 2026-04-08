@@ -1,0 +1,61 @@
+---
+import { Picture } from 'astro:assets';
+import ctaImage from '@/assets/images/cta-image.jpg';
+import type { ContactContent, NavItem } from '@/lib/content/types';
+
+interface Props {
+  contact: ContactContent;
+  nav?: NavItem[];
+}
+
+const { contact, nav = [] } = Astro.props;
+
+const socials = [
+  { label: 'Instagram', href: '#' },
+  { label: 'Behance', href: '#' },
+  { label: 'Facebook', href: '#' },
+  { label: 'LinkedIn', href: '#' },
+];
+---
+
+<section class="section-rule px-6 py-16 lg:px-10 lg:py-24">
+  <div class="mx-auto grid w-full max-w-[1440px] gap-10 lg:grid-cols-[220px_1fr_220px] lg:items-end">
+    <div>
+      <p class="mb-5 text-[10px] uppercase tracking-[0.2em] text-white/55">Navigation</p>
+      <nav class="space-y-2 text-sm text-white/65">
+        {nav.map((item) => (
+          <a href={item.href} class="block transition hover:text-white">{item.label}</a>
+        ))}
+      </nav>
+    </div>
+
+    <div class="text-center">
+      <p class="text-sm text-white/55">Ready to create something extraordinary?</p>
+      <h2 class="mt-2 font-display text-6xl font-semibold text-white sm:text-7xl lg:text-8xl">{contact.title}</h2>
+
+      <a href={`mailto:${contact.email}`} class="group relative mt-7 inline-block overflow-hidden border border-white/20">
+        <Picture
+          src={ctaImage}
+          alt="Let's talk"
+          widths={[420, 760, 980]}
+          sizes="(max-width: 1024px) 70vw, 26vw"
+          formats={['avif', 'webp']}
+          loading="lazy"
+          class="h-auto w-[300px] object-cover transition duration-500 group-hover:scale-105"
+        />
+        <span class="absolute inset-0 grid place-items-center bg-black/45 text-sm text-white/95">
+          {contact.description}
+        </span>
+      </a>
+    </div>
+
+    <div class="lg:text-right">
+      <p class="mb-5 text-[10px] uppercase tracking-[0.2em] text-white/55">Socials</p>
+      <nav class="space-y-2 text-sm text-white/65">
+        {socials.map((item) => (
+          <a href={item.href} class="block transition hover:text-white">{item.label}</a>
+        ))}
+      </nav>
+    </div>
+  </div>
+</section>
