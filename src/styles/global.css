@@ -4,7 +4,7 @@
 
 @font-face {
   font-family: 'Mona Sans';
-  src: url('https://cdn.prod.website-files.com/67f5485c53a946dfe171dde4/67f54c4397cc0e1646847919_Mona-Sans.ttf') format('truetype');
+  src: local('Mona Sans'), local('MonaSans');
   font-weight: 100 900;
   font-style: normal;
   font-display: swap;
@@ -13,6 +13,10 @@
 :root {
   --bg: #050505;
   --fg: #f4f4f4;
+}
+
+@view-transition {
+  navigation: auto;
 }
 
 @keyframes vt-cinema-in {
