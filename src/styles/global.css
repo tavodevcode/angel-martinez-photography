@@ -63,6 +63,32 @@
   }
 }
 
+@keyframes vt-window-in {
+  from {
+    opacity: 0;
+    transform: translateY(14px) scale(0.986);
+    filter: blur(3px) saturate(0.92);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+    filter: blur(0) saturate(1);
+  }
+}
+
+@keyframes vt-window-out {
+  from {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+    filter: blur(0) saturate(1);
+  }
+  to {
+    opacity: 0.04;
+    transform: translateY(-10px) scale(1.01);
+    filter: blur(4px) saturate(0.88);
+  }
+}
+
 html,
 body {
   margin: 0;
@@ -99,12 +125,8 @@ main {
   border-top: 1px solid rgba(255, 255, 255, 0.12);
 }
 
-.vt-title {
+.vt-page-title {
   view-transition-name: page-title;
-}
-
-.vt-card {
-  view-transition-name: hero-card;
 }
 
 @media (prefers-reduced-motion: reduce) {
