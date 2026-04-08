@@ -1,0 +1,32 @@
+---
+import InfiniteMovingCards from '@/components/aceternity/InfiniteMovingCards.astro';
+import type { TestimonialItem } from '@/lib/content/types';
+
+interface Props {
+  brands: string[];
+  testimonials: TestimonialItem[];
+}
+
+const { brands, testimonials } = Astro.props;
+---
+
+<section class="px-6 py-20 lg:px-10 lg:py-24">
+  <div class="mx-auto w-full max-w-7xl">
+    <h2 class="text-4xl text-white sm:text-5xl">Confían en nuestro trabajo</h2>
+    <div class="mt-6">
+      <InfiniteMovingCards items={brands} />
+    </div>
+
+    <div class="mt-10 grid gap-4 lg:grid-cols-3">
+      {testimonials.map((item) => (
+        <blockquote class="rounded-2xl border border-white/10 bg-white/[0.03] p-6">
+          <p class="text-white/80">“{item.quote}”</p>
+          <footer class="mt-6">
+            <p class="font-medium text-white">{item.author}</p>
+            <p class="text-sm text-white/55">{item.role}</p>
+          </footer>
+        </blockquote>
+      ))}
+    </div>
+  </div>
+</section>

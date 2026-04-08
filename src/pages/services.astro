@@ -1,0 +1,25 @@
+---
+import SiteScaffold from '@/components/layout/SiteScaffold.astro';
+import ContactSection from '@/components/sections/ContactSection.astro';
+import PageHeader from '@/components/sections/PageHeader.astro';
+import ServicesSection from '@/components/sections/ServicesSection.astro';
+import { createContentProvider } from '@/lib/content';
+
+const provider = createContentProvider();
+const content = await provider.getMarketingContent();
+---
+
+<SiteScaffold
+  title={`${content.brand} | Servicios`}
+  description="Explora paquetes de fotografía para bodas, eventos, retratos y campañas de producto."
+  brand={content.brand}
+  nav={content.nav}
+  pageTone="inner"
+>
+  <PageHeader
+    title="Servicios"
+    subtitle="Diseñamos paquetes por objetivo de negocio y estilo visual, con entregables claros y tiempos definidos."
+  />
+  <ServicesSection services={content.services} />
+  <ContactSection contact={content.contact} nav={content.nav} />
+</SiteScaffold>

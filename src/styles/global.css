@@ -1,0 +1,121 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@font-face {
+  font-family: 'Mona Sans';
+  src: url('https://cdn.prod.website-files.com/67f5485c53a946dfe171dde4/67f54c4397cc0e1646847919_Mona-Sans.ttf') format('truetype');
+  font-weight: 100 900;
+  font-style: normal;
+  font-display: swap;
+}
+
+:root {
+  --bg: #050505;
+  --fg: #f4f4f4;
+}
+
+@keyframes vt-cinema-in {
+  from {
+    opacity: 0;
+    transform: translateY(10px) scale(0.996);
+    filter: blur(2px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+    filter: blur(0);
+  }
+}
+
+@keyframes vt-cinema-out {
+  from {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+    filter: blur(0);
+  }
+  to {
+    opacity: 0;
+    transform: translateY(-8px) scale(0.997);
+    filter: blur(2px);
+  }
+}
+
+@keyframes vt-snap-in {
+  from {
+    opacity: 0.02;
+    transform: translateY(2px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes vt-snap-out {
+  from {
+    opacity: 1;
+    transform: translateY(0);
+  }
+  to {
+    opacity: 0.06;
+    transform: translateY(-2px);
+  }
+}
+
+html,
+body {
+  margin: 0;
+  padding: 0;
+  background: var(--bg);
+  color: var(--fg);
+  font-family: 'Mona Sans', system-ui, sans-serif;
+  text-rendering: optimizeLegibility;
+}
+
+body {
+  overflow-x: hidden;
+}
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+  font-family: 'Mona Sans', system-ui, sans-serif;
+  line-height: 1;
+}
+
+main {
+  min-height: 100vh;
+}
+
+.soft-grid {
+  background-color: #050505;
+}
+
+.section-rule {
+  border-top: 1px solid rgba(255, 255, 255, 0.12);
+}
+
+.vt-title {
+  view-transition-name: page-title;
+}
+
+.vt-card {
+  view-transition-name: hero-card;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation: none !important;
+    transition-duration: 0.01ms !important;
+  }
+
+  html {
+    scroll-behavior: auto;
+  }
+}

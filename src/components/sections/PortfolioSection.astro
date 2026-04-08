@@ -1,0 +1,72 @@
+---
+import { Picture } from 'astro:assets';
+import type { PortfolioItem } from '@/lib/content/types';
+
+interface Props {
+  portfolio: PortfolioItem[];
+}
+
+const { portfolio } = Astro.props;
+const [a, b, c, d, e] = portfolio;
+---
+
+<section class="section-rule px-6 py-16 lg:px-10 lg:py-24">
+  <div class="mx-auto w-full max-w-[1440px]">
+    <p class="mb-8 text-[10px] uppercase tracking-[0.22em] text-white/55">* Portfolio</p>
+
+    <div class="grid gap-4 md:grid-cols-[0.58fr_1.58fr_1fr] md:items-stretch">
+      <article class="overflow-hidden border border-white/10">
+        <Picture
+          src={a.image}
+          alt={a.title}
+          widths={[320, 520, 760]}
+          sizes="(max-width: 768px) 100vw, 22vw"
+          formats={['avif', 'webp']}
+          loading="lazy"
+          class="h-full min-h-[300px] w-full object-cover md:min-h-[420px]"
+        />
+      </article>
+
+      <article class="overflow-hidden border border-white/10">
+        <Picture
+          src={b.image}
+          alt={b.title}
+          widths={[680, 980, 1300]}
+          sizes="(max-width: 768px) 100vw, 50vw"
+          formats={['avif', 'webp']}
+          loading="lazy"
+          class="h-full min-h-[300px] w-full object-cover md:min-h-[420px]"
+        />
+      </article>
+
+      <div class="grid grid-rows-3 gap-4">
+        {[c, d, e].map((item) => (
+          <article class="overflow-hidden border border-white/10">
+            <Picture
+              src={item.image}
+              alt={item.title}
+              widths={[320, 520, 760]}
+              sizes="(max-width: 768px) 100vw, 26vw"
+              formats={['avif', 'webp']}
+              loading="lazy"
+              class="h-full min-h-[96px] w-full object-cover md:min-h-[133px]"
+            />
+          </article>
+        ))}
+      </div>
+    </div>
+
+    <div class="mt-4 grid gap-2 md:grid-cols-[0.7fr_1.7fr_1fr]">
+      <div />
+      <div class="pt-1">
+        <p class="text-sm text-white/85">{b.title}</p>
+        <p class="text-xs uppercase tracking-[0.12em] text-white/45">{b.category}</p>
+      </div>
+      <div class="flex items-center justify-center gap-2 text-white/40">
+        <span class="h-1.5 w-10 rounded-full bg-white/25" />
+        <span class="h-1.5 w-10 rounded-full bg-white/10" />
+        <span class="h-1.5 w-10 rounded-full bg-white/10" />
+      </div>
+    </div>
+  </div>
+</section>
