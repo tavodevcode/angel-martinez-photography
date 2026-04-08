@@ -7,24 +7,24 @@ import PageHeader from '@/components/sections/PageHeader.astro';
 import { createContentProvider } from '@/lib/content';
 
 const provider = createContentProvider();
-const content = await provider.getMarketingContent('es');
+const content = await provider.getMarketingContent('en');
 ---
 
 <SiteScaffold
-  title={`${content.brand} | Nosotros`}
-  description="Conoce la visión, estilo y proceso creativo de nuestro estudio fotográfico."
+  title={`${content.brand} | About`}
+  description="Meet the visual direction, process, and creative approach of our photography studio."
   brand={content.brand}
   nav={content.nav}
-  locale="es"
-  homeHref="/"
+  locale="en"
+  homeHref="/en/"
   ctaLabel={content.hero.ctaLabel}
   ctaHref={content.hero.ctaHref}
   pageTone="inner"
 >
   <PageHeader
-    eyebrow="Navegacion editorial"
-    title="Nosotros"
-    subtitle="Dirección creativa, producción visual y un workflow sólido para entregar fotografías listas para publicar."
+    eyebrow="Editorial navigation"
+    title="About"
+    subtitle="Creative direction, visual production, and a reliable workflow to deliver publication-ready assets."
   />
   <AboutSection about={content.about} />
   <GallerySection gallery={content.gallery} />

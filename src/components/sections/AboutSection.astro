@@ -1,5 +1,6 @@
 ---
 import { Picture } from 'astro:assets';
+import { getLocaleFromPath } from '@/lib/i18n';
 import type { AboutContent } from '@/lib/content/types';
 
 interface Props {
@@ -7,13 +8,15 @@ interface Props {
 }
 
 const { about } = Astro.props;
+const locale = getLocaleFromPath(Astro.url.pathname);
+const sectionLabel = locale === 'en' ? '* About' : '* Nosotros';
 const words = about.title.split(' ');
 ---
 
 <section class="section-rule px-6 py-16 lg:px-10 lg:py-24">
   <div class="mx-auto grid w-full max-w-[1440px] gap-10 lg:grid-cols-[1.1fr_1fr] lg:gap-16">
     <div>
-      <p class="mb-8 text-[10px] uppercase tracking-[0.22em] text-white/55">* About Us</p>
+      <p class="mb-8 text-[10px] uppercase tracking-[0.22em] text-white/55">{sectionLabel}</p>
       <h2 class="font-display text-[58px] font-semibold leading-[0.92] text-white sm:text-[74px] lg:text-[92px]">
         {words.map((word) => <span class="mr-[0.18em] inline-block">{word}</span>)}
       </h2>

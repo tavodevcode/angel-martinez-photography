@@ -1,15 +1,21 @@
 ---
+import type { Locale } from '@/lib/content/types';
+
 interface Props {
   brand: string;
+  locale: Locale;
+  ctaHref: string;
 }
 
 const year = new Date().getFullYear();
-const { brand } = Astro.props;
+const { brand, locale, ctaHref } = Astro.props;
+const rightsCopy = locale === 'en' ? 'All rights reserved.' : 'Todos los derechos reservados.';
+const privacyCopy = locale === 'en' ? 'Privacy Policy' : 'Aviso de privacidad';
 ---
 
 <footer class="section-rule px-6 py-5 lg:px-10">
   <div class="mx-auto flex w-full max-w-[1440px] items-center justify-between gap-4 text-xs text-white/45">
-    <p>© {year} {brand}. All rights reserved.</p>
-    <a href="/contact" class="transition hover:text-white/70">Privacy Policy</a>
+    <p>© {year} {brand}. {rightsCopy}</p>
+    <a href={ctaHref} class="transition hover:text-white/70">{privacyCopy}</a>
   </div>
 </footer>

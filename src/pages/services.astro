@@ -6,7 +6,7 @@ import ServicesSection from '@/components/sections/ServicesSection.astro';
 import { createContentProvider } from '@/lib/content';
 
 const provider = createContentProvider();
-const content = await provider.getMarketingContent();
+const content = await provider.getMarketingContent('es');
 ---
 
 <SiteScaffold
@@ -14,9 +14,14 @@ const content = await provider.getMarketingContent();
   description="Explora paquetes de fotografía para bodas, eventos, retratos y campañas de producto."
   brand={content.brand}
   nav={content.nav}
+  locale="es"
+  homeHref="/"
+  ctaLabel={content.hero.ctaLabel}
+  ctaHref={content.hero.ctaHref}
   pageTone="inner"
 >
   <PageHeader
+    eyebrow="Navegacion editorial"
     title="Servicios"
     subtitle="Diseñamos paquetes por objetivo de negocio y estilo visual, con entregables claros y tiempos definidos."
   />

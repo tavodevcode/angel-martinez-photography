@@ -2,27 +2,29 @@
 import SiteScaffold from '@/components/layout/SiteScaffold.astro';
 import ContactSection from '@/components/sections/ContactSection.astro';
 import PageHeader from '@/components/sections/PageHeader.astro';
+import ServicesSection from '@/components/sections/ServicesSection.astro';
 import { createContentProvider } from '@/lib/content';
 
 const provider = createContentProvider();
-const content = await provider.getMarketingContent('es');
+const content = await provider.getMarketingContent('en');
 ---
 
 <SiteScaffold
-  title={`${content.brand} | Contacto`}
-  description="Contáctanos para planear tu próxima sesión de fotos editorial o comercial."
+  title={`${content.brand} | Services`}
+  description="Explore service packages for weddings, events, portraits, and product campaigns."
   brand={content.brand}
   nav={content.nav}
-  locale="es"
-  homeHref="/"
+  locale="en"
+  homeHref="/en/"
   ctaLabel={content.hero.ctaLabel}
   ctaHref={content.hero.ctaHref}
   pageTone="inner"
 >
   <PageHeader
-    eyebrow="Navegacion editorial"
-    title="Contacto"
-    subtitle="Cuéntanos el tipo de sesión, fechas y objetivo creativo. Te proponemos alcance, tiempos y producción."
+    eyebrow="Editorial navigation"
+    title="Services"
+    subtitle="Packages are designed around business goals, creative direction, and clear deliverables."
   />
+  <ServicesSection services={content.services} />
   <ContactSection contact={content.contact} nav={content.nav} />
 </SiteScaffold>

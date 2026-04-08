@@ -1,5 +1,6 @@
 ---
 import { Picture } from 'astro:assets';
+import { getLocaleFromPath } from '@/lib/i18n';
 import type { PortfolioItem } from '@/lib/content/types';
 
 interface Props {
@@ -7,12 +8,14 @@ interface Props {
 }
 
 const { portfolio } = Astro.props;
+const locale = getLocaleFromPath(Astro.url.pathname);
+const sectionLabel = locale === 'en' ? '* Portfolio' : '* Portafolio';
 const [a, b, c, d, e] = portfolio;
 ---
 
 <section class="section-rule px-6 py-16 lg:px-10 lg:py-24">
   <div class="mx-auto w-full max-w-[1440px]">
-    <p class="mb-8 text-[10px] uppercase tracking-[0.22em] text-white/55">* Portfolio</p>
+    <p class="mb-8 text-[10px] uppercase tracking-[0.22em] text-white/55">{sectionLabel}</p>
 
     <div class="grid gap-4 md:grid-cols-[0.58fr_1.58fr_1fr] md:items-stretch">
       <article class="overflow-hidden border border-white/10">

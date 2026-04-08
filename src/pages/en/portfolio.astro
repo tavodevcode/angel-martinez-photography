@@ -7,24 +7,24 @@ import PortfolioSection from '@/components/sections/PortfolioSection.astro';
 import { createContentProvider } from '@/lib/content';
 
 const provider = createContentProvider();
-const content = await provider.getMarketingContent('es');
+const content = await provider.getMarketingContent('en');
 ---
 
 <SiteScaffold
-  title={`${content.brand} | Portafolio`}
-  description="Selección de proyectos fotográficos con enfoque editorial y comercial."
+  title={`${content.brand} | Portfolio`}
+  description="Selected projects that showcase art direction, visual language, and production consistency."
   brand={content.brand}
   nav={content.nav}
-  locale="es"
-  homeHref="/"
+  locale="en"
+  homeHref="/en/"
   ctaLabel={content.hero.ctaLabel}
   ctaHref={content.hero.ctaHref}
   pageTone="inner"
 >
   <PageHeader
-    eyebrow="Navegacion editorial"
-    title="Portafolio"
-    subtitle="Casos seleccionados para mostrar dirección de arte, lenguaje visual y consistencia de entrega."
+    eyebrow="Editorial navigation"
+    title="Portfolio"
+    subtitle="Selected work that reflects craft, visual consistency, and storytelling quality."
   />
   <PortfolioSection portfolio={content.portfolio} />
   <BrandStripSection brands={content.brands} />
