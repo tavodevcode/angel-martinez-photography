@@ -18,7 +18,7 @@ const { title, description } = Astro.props;
     <title>{title}</title>
     <meta name="description" content={description} />
     <meta name="generator" content={Astro.generator} />
-    <ClientRouter fallback="swap" />
+    <ClientRouter fallback="animate" />
     <slot name="head" />
   </head>
   <body class="bg-ink text-fog">

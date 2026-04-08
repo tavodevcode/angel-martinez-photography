@@ -14,12 +14,12 @@ const { hero } = Astro.props;
     <div class="grid min-h-[72vh] grid-cols-1 items-end gap-10 lg:grid-cols-[1fr_360px] lg:gap-12">
       <div class="relative pb-20 lg:pb-14">
         <p class="mb-4 text-[10px] uppercase tracking-[0.24em] text-white/55">{hero.eyebrow}</p>
-        <h1 class="vt-title font-display text-[31vw] font-semibold leading-[0.9] tracking-tight text-white sm:text-[190px] lg:text-[270px]">
+        <h1 class="font-display text-[31vw] font-semibold leading-[0.9] tracking-tight text-white sm:text-[190px] lg:text-[270px]">
           {hero.title}
         </h1>
 
         <div class="absolute left-1/2 top-[60%] w-[56%] -translate-x-1/2 -translate-y-1/2 md:w-[50%] lg:w-[42%]">
-          <div class="vt-card relative overflow-hidden border border-white/20 bg-black">
+          <div class="relative overflow-hidden border border-white/20 bg-black">
             <Image
               src={hero.image}
               alt="Hero eye"

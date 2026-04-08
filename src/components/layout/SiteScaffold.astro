@@ -12,40 +12,27 @@ interface Props {
   pageTone?: 'home' | 'inner';
 }
 
-const { title, description, brand, nav, pageTone = 'inner' } = Astro.props;
-const homeDirectionalTransition = {
+const { title, description, brand, nav } = Astro.props;
+const windowTransition = {
   forwards: {
-    old: { name: 'vt-cinema-out', duration: '0.34s', easing: 'cubic-bezier(0.22, 1, 0.36, 1)', fillMode: 'both' },
-    new: { name: 'vt-snap-in', duration: '0.17s', easing: 'cubic-bezier(0.16, 1, 0.3, 1)', fillMode: 'both' },
+    old: { name: 'vt-window-out', duration: '0.34s', easing: 'cubic-bezier(0.33, 0, 0.67, 1)', fillMode: 'both' },
+    new: { name: 'vt-window-in', duration: '0.34s', easing: 'cubic-bezier(0.22, 1, 0.36, 1)', fillMode: 'both' },
   },
   backwards: {
-    old: { name: 'vt-snap-out', duration: '0.15s', easing: 'cubic-bezier(0.4, 0, 1, 1)', fillMode: 'both' },
-    new: { name: 'vt-snap-in', duration: '0.15s', easing: 'cubic-bezier(0.16, 1, 0.3, 1)', fillMode: 'both' },
+    old: { name: 'vt-window-out', duration: '0.34s', easing: 'cubic-bezier(0.33, 0, 0.67, 1)', fillMode: 'both' },
+    new: { name: 'vt-window-in', duration: '0.34s', easing: 'cubic-bezier(0.22, 1, 0.36, 1)', fillMode: 'both' },
   },
 };
-
-const innerDirectionalTransition = {
-  forwards: {
-    old: { name: 'vt-snap-out', duration: '0.22s', easing: 'cubic-bezier(0.4, 0, 1, 1)', fillMode: 'both' },
-    new: { name: 'vt-cinema-in', duration: '0.3s', easing: 'cubic-bezier(0.22, 1, 0.36, 1)', fillMode: 'both' },
-  },
-  backwards: {
-    old: { name: 'vt-snap-out', duration: '0.16s', easing: 'cubic-bezier(0.4, 0, 1, 1)', fillMode: 'both' },
-    new: { name: 'vt-snap-in', duration: '0.16s', easing: 'cubic-bezier(0.16, 1, 0.3, 1)', fillMode: 'both' },
-  },
-};
-
-const pageTransition = pageTone === 'home' ? homeDirectionalTransition : innerDirectionalTransition;
 ---
 
 <BaseLayout title={title} description={description}>
   <div transition:persist>
-    <FloatingNav client:idle brand={brand} links={nav} />
+    <FloatingNav client:load brand={brand} links={nav} />
   </div>
   <div transition:persist aria-hidden="true" class="pointer-events-none fixed inset-0 z-10">
     <div class="absolute inset-y-0 left-1/2 w-px -translate-x-1/2 bg-white/10" />
   </div>
-  <main transition:animate={pageTransition} class="soft-grid relative">
+  <main transition:animate={windowTransition} class="soft-grid relative">
     <slot />
   </main>
   <div transition:persist>
