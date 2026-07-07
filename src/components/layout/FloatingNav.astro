@@ -1,0 +1,269 @@
+---
+import { NAV_DEFINITIONS, NAV_UI } from '@/lib/content/nav';
+import { getLocaleFromPath, withLocalePath } from '@/lib/i18n';
+
+// El nav vive dentro de un <div transition:persist>, así que sobrevive a las
+// navegaciones (incluidas las de cambio de idioma). El render de servidor deja
+// el estado correcto para la primera página; a partir de ahí el script vanilla
+// re-sincroniza locale, links y aria-current en cada astro:after-swap.
+//
+// Los listeners van delegados en document/window (no en el header): así la
+// interactividad no depende de que transition:persist conserve el nodo exacto
+// ni de que el script se re-ejecute tras un swap.
+interface Props {
+  brand: string;
+}
+
+const { brand } = Astro.props;
+
+function normalizePath(path: string): string {
+  if (!path) return '/';
+  const normalized = path.replace(/\/+$/, '');
+  return normalized.length === 0 ? '/' : normalized;
+}
+
+const pathname = normalizePath(Astro.url.pathname);
+const locale = getLocaleFromPath(pathname);
+const ui = NAV_UI[locale];
+const homeHref = withLocalePath(locale, '/');
+const languageHref = locale === 'en' ? '/' : '/en/';
+const languageLabel = locale === 'en' ? 'ES' : 'EN';
+
+const links = NAV_DEFINITIONS.map((item) => {
+  const href = withLocalePath(locale, item.path);
+  return {
+    path: item.path,
+    href,
+    label: item.label[locale],
+    active: normalizePath(href) === pathname,
+  };
+});
+
+const desktopBase = 'link-underline font-caption text-[11px] uppercase tracking-[0.2em] transition-colors';
+const mobileBase = 'py-3 font-caption text-[14px] uppercase tracking-[0.24em] transition';
+const activeClass = 'font-semibold text-white';
+const inactiveClass = 'text-muted hover:text-white';
+---
+
+<header data-floating-nav class="nav-glass fixed inset-x-0 top-0 z-50 border-b">
+  <!-- El panel móvil es fixed full-screen y se pinta debajo de esta barra (z-10). -->
+  <div class="relative z-10 flex w-full items-center justify-between px-6 py-5 lg:px-12 lg:py-[26px]">
+    <a
+      href={homeHref}
+      data-nav-home
+      data-astro-prefetch="viewport"
+      class="font-caption text-[12px] font-semibold uppercase tracking-[0.2em] text-white"
+    >
+      {brand}
+    </a>
+
+    <div class="flex items-center gap-9">
+      <nav class="hidden items-center gap-9 md:flex">
+        {
+          links.map((link) => (
+            <a
+              href={link.href}
+              data-nav-link
+              data-nav-variant="desktop"
+              data-nav-path={link.path}
+              data-astro-prefetch="viewport"
+              aria-current={link.active ? 'page' : undefined}
+              class={`${desktopBase} ${link.active ? activeClass : inactiveClass}`}
+            >
+              {link.label}
+            </a>
+          ))
+        }
+      </nav>
+      <a
+        href={languageHref}
+        data-lang-toggle
+        data-astro-prefetch="viewport"
+        class="hidden font-caption text-[11px] uppercase tracking-[0.2em] text-muted transition hover:text-white md:inline-flex"
+      >
+        {languageLabel}
+      </a>
+      <button
+        type="button"
+        data-nav-toggle
+        aria-label={ui.menuAriaLabel}
+        aria-expanded="false"
+        class="-m-2 p-2 font-caption text-[11px] uppercase tracking-[0.2em] text-white md:hidden"
+      >
+        {ui.menuLabel}
+      </button>
+    </div>
+  </div>
+
+  <div data-nav-panel class="mobile-menu-panel md:hidden" aria-hidden="true">
+    <nav class="flex h-full flex-col justify-center px-8 pt-16">
+      <div class="flex flex-col">
+        {
+          links.map((link) => (
+            <a
+              href={link.href}
+              data-nav-link
+              data-nav-variant="mobile"
+              data-nav-path={link.path}
+              data-astro-prefetch="viewport"
+              aria-current={link.active ? 'page' : undefined}
+              tabindex="-1"
+              class={`${mobileBase} ${link.active ? activeClass : inactiveClass}`}
+            >
+              {link.label}
+            </a>
+          ))
+        }
+        <a
+          href={languageHref}
+          data-lang-toggle
+          data-astro-prefetch="viewport"
+          tabindex="-1"
+          class="mt-6 border-t border-white/10 py-4 font-caption text-[12px] uppercase tracking-[0.24em] text-muted transition hover:text-white"
+        >
+          {languageLabel}
+        </a>
+      </div>
+    </nav>
+  </div>
+</header>
+
+<script>
+  import { NAV_DEFINITIONS, NAV_UI } from '@/lib/content/nav';
+  import { getLocaleFromPath, withLocalePath } from '@/lib/i18n';
+  import type { Locale } from '@/lib/content/types';
+
+  const DESKTOP_BASE = 'link-underline font-caption text-[11px] uppercase tracking-[0.2em] transition-colors';
+  const MOBILE_BASE = 'py-3 font-caption text-[14px] uppercase tracking-[0.24em] transition';
+  const ACTIVE = 'font-semibold text-white';
+  const INACTIVE = 'text-muted hover:text-white';
+  const LABELS = new Map(NAV_DEFINITIONS.map((item) => [item.path, item.label]));
+
+  function normalizePath(path: string): string {
+    if (!path) return '/';
+    const normalized = path.replace(/\/+$/, '');
+    return normalized.length === 0 ? '/' : normalized;
+  }
+
+  function getPathnameFromHref(href: string): string {
+    try {
+      return normalizePath(new URL(href, window.location.origin).pathname);
+    } catch {
+      return normalizePath(href);
+    }
+  }
+
+  // Todo se consulta fresco desde el DOM: nada queda capturado en closures
+  // atadas a un nodo que una navegación podría reemplazar.
+  const getHeader = () => document.querySelector<HTMLElement>('[data-floating-nav]');
+  const getPanel = () => document.querySelector<HTMLElement>('[data-nav-panel]');
+  const getToggle = () => document.querySelector<HTMLButtonElement>('[data-nav-toggle]');
+
+  const isOpen = () => getPanel()?.classList.contains('is-open') ?? false;
+
+  function setOpen(value: boolean) {
+    const panel = getPanel();
+    const toggle = getToggle();
+    panel?.classList.toggle('is-open', value);
+    panel?.setAttribute('aria-hidden', String(!value));
+    toggle?.setAttribute('aria-expanded', String(value));
+    panel?.querySelectorAll<HTMLAnchorElement>('a').forEach((link) => {
+      if (value) link.removeAttribute('tabindex');
+      else link.setAttribute('tabindex', '-1');
+    });
+    // Scroll lock mientras el menú full-screen está abierto.
+    document.documentElement.style.overflow = value ? 'hidden' : '';
+  }
+
+  function applyScrolled(value: boolean) {
+    getHeader()?.classList.toggle('is-scrolled', value);
+  }
+
+  function syncToPath() {
+    const header = getHeader();
+    if (!header) return;
+    const pathname = normalizePath(window.location.pathname);
+    const locale: Locale = getLocaleFromPath(pathname);
+    const ui = NAV_UI[locale];
+
+    header.querySelectorAll<HTMLAnchorElement>('[data-nav-link]').forEach((link) => {
+      const base = link.dataset.navPath ?? '/';
+      const href = withLocalePath(locale, base);
+      const active = normalizePath(href) === pathname;
+      const variantBase = link.dataset.navVariant === 'mobile' ? MOBILE_BASE : DESKTOP_BASE;
+      link.setAttribute('href', href);
+      link.textContent = LABELS.get(base)?.[locale] ?? link.textContent;
+      link.className = `${variantBase} ${active ? ACTIVE : INACTIVE}`;
+      if (active) link.setAttribute('aria-current', 'page');
+      else link.removeAttribute('aria-current');
+    });
+
+    const languageHref = locale === 'en' ? '/' : '/en/';
+    const languageLabel = locale === 'en' ? 'ES' : 'EN';
+    header.querySelectorAll<HTMLAnchorElement>('[data-lang-toggle]').forEach((link) => {
+      link.setAttribute('href', languageHref);
+      link.textContent = languageLabel;
+    });
+
+    header.querySelector<HTMLAnchorElement>('[data-nav-home]')?.setAttribute('href', withLocalePath(locale, '/'));
+
+    const toggle = getToggle();
+    if (toggle) {
+      toggle.textContent = ui.menuLabel;
+      toggle.setAttribute('aria-label', ui.menuAriaLabel);
+    }
+
+    // Reaplica tabindex según el estado actual del panel.
+    setOpen(isOpen());
+  }
+
+  // ---- Listeners globales: se registran UNA vez y sobreviven a todo ----
+
+  document.addEventListener('click', (event) => {
+    const target = event.target as HTMLElement;
+
+    if (target.closest('[data-nav-toggle]')) {
+      setOpen(!isOpen());
+      return;
+    }
+
+    const anchor = target.closest<HTMLAnchorElement>(
+      '[data-floating-nav] a[data-nav-link], [data-floating-nav] a[data-nav-home], [data-floating-nav] a[data-lang-toggle]',
+    );
+    if (!anchor) return;
+    // Evita re-navegar a la página actual.
+    if (getPathnameFromHref(anchor.getAttribute('href') ?? '') === normalizePath(window.location.pathname)) {
+      event.preventDefault();
+    }
+    if (anchor.closest('[data-nav-panel]')) setOpen(false);
+  });
+
+  document.addEventListener('keydown', (event) => {
+    if (event.key === 'Escape' && isOpen()) setOpen(false);
+  });
+
+  let ticking = false;
+  window.addEventListener(
+    'scroll',
+    () => {
+      if (ticking) return;
+      ticking = true;
+      window.requestAnimationFrame(() => {
+        applyScrolled(window.scrollY > 24);
+        ticking = false;
+      });
+    },
+    { passive: true },
+  );
+
+  // Durante el swap deja el nav opaco; al terminar cierra el menú y re-sincroniza.
+  document.addEventListener('astro:before-swap', () => applyScrolled(true));
+  document.addEventListener('astro:after-swap', () => {
+    setOpen(false);
+    syncToPath();
+    applyScrolled(window.scrollY > 24);
+  });
+
+  applyScrolled(window.scrollY > 24);
+  syncToPath();
+</script>
