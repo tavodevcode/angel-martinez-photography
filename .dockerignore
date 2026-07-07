@@ -1,5 +1,11 @@
 node_modules
 dist
-legacy-src
-legacy-public
 .git
+.astro
+.claude
+.pnpm-store
+website.pen
+docs
+README.md
+CLAUDE.md
+info.md

@@ -1,7 +1,7 @@
 ---
 import BaseLayout from '@/layouts/BaseLayout.astro';
 import Footer from '@/components/layout/Footer.astro';
-import FloatingNav from '@/components/layout/FloatingNav';
+import FloatingNav from '@/components/layout/FloatingNav.astro';
 import type { FooterContent, Locale } from '@/lib/content/types';
 
 interface Props {
@@ -28,7 +28,7 @@ const windowTransition = {
 
 <BaseLayout title={title} description={description} locale={locale}>
   <div transition:persist>
-    <FloatingNav client:load brand={brand} initialPath={Astro.url.pathname} />
+    <FloatingNav brand={brand} />
   </div>
   <div transition:persist aria-hidden="true" class="pointer-events-none fixed inset-0 z-10">
     <div class="absolute inset-y-0 left-1/2 w-px -translate-x-1/2 bg-white/10" />

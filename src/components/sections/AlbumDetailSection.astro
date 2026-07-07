@@ -112,7 +112,7 @@ photos.forEach((photo, index) => {
         <div class="flex flex-col gap-6">
           {column.map((piece, pieceIndex) => (
             <figure data-reveal data-zoom class="flex flex-col gap-3" style={`--reveal-delay:${pieceIndex * 80}ms`}>
-              <div class={`relative overflow-hidden rounded-xl ${piece.meta ? 'shadow-[0_12px_24px_rgba(0,0,0,0.7)]' : ''} ${piece.heightClass}`}>
+              <div class={`relative overflow-hidden rounded-xl bg-white/[0.04] ${piece.meta ? 'shadow-[0_12px_24px_rgba(0,0,0,0.7)]' : ''} ${piece.heightClass}`}>
                 <Picture
                   src={piece.src}
                   alt={piece.alt}

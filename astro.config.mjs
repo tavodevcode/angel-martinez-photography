@@ -1,12 +1,12 @@
 import { defineConfig } from 'astro/config';
-import react from '@astrojs/react';
 import tailwind from '@astrojs/tailwind';
 
 export default defineConfig({
-  site: 'https://photos.angelmartinez.local',
+  // URL canónica del deploy; se sobreescribe por entorno (Vercel/VPS) via SITE.
+  // `||` y no `??`: un ARG de Docker sin valor llega como string vacío.
+  site: process.env.SITE || 'https://photos.angelmartinez.local',
   output: 'static',
   integrations: [
-    react(),
     tailwind({
       applyBaseStyles: false,
     }),
