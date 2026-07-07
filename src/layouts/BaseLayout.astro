@@ -55,14 +55,36 @@ const { title, description, locale = 'es' } = Astro.props;
           },
           { threshold: 0.12, rootMargin: '0px 0px -8% 0px' },
         );
+        const viewportBottom = window.innerHeight * 0.92; // espeja el rootMargin -8%
         targets.forEach((el) => {
           const trigger = el.hasAttribute('data-rise') && el.parentElement ? el.parentElement : el;
+          // Lo que ya está en viewport se revela de inmediato, sin esperar el
+          // primer callback del observer; el IO queda solo para lo below-fold.
+          const rect = trigger.getBoundingClientRect();
+          if (rect.top < viewportBottom && rect.bottom > 0) {
+            el.classList.add('is-visible');
+            return;
+          }
           map.set(trigger, el);
           io.observe(trigger);
         });
       };
 
-      document.addEventListener('astro:page-load', initReveal);
+      // En carga inicial revela de inmediato; tras una navegación espera a que
+      // la view transition (0.34s) termine para no competir con ella por frames
+      // (importante en móviles de alta resolución).
+      let navigated = false;
+      document.addEventListener('astro:after-swap', () => {
+        navigated = true;
+        // El ClientRouter reemplaza los atributos de <html> con los del nuevo
+        // documento y los scripts inline no se re-ejecutan: hay que restaurar
+        // la marca has-js o los estados ocultos de [data-reveal] no aplican.
+        document.documentElement.classList.add('has-js');
+      });
+      document.addEventListener('astro:page-load', () => {
+        if (navigated) window.setTimeout(initReveal, 360);
+        else initReveal();
+      });
     </script>
   </body>
 </html>
