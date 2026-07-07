@@ -1,0 +1,42 @@
+---
+import { getCollection, type CollectionEntry } from 'astro:content';
+import SiteScaffold from '@/components/layout/SiteScaffold.astro';
+import AlbumDetailSection from '@/components/sections/AlbumDetailSection.astro';
+import { createContentProvider } from '@/lib/content';
+
+export async function getStaticPaths() {
+  const albums = (await getCollection('albums')).sort((a, b) => a.data.order - b.data.order);
+  return albums.map((album, index) => ({
+    params: { slug: album.id },
+    props: { album, nextAlbum: albums[(index + 1) % albums.length] },
+  }));
+}
+
+interface Props {
+  album: CollectionEntry<'albums'>;
+  nextAlbum: CollectionEntry<'albums'>;
+}
+
+const { album, nextAlbum } = Astro.props;
+const provider = createContentProvider();
+const content = await provider.getMarketingContent('es');
+---
+
+<SiteScaffold
+  title={`${content.brand} | ${album.data.title.es}`}
+  description={album.data.description.es}
+  brand={content.brand}
+  locale="es"
+  footer={content.footer}
+  pageTone="inner"
+>
+  <AlbumDetailSection
+    album={album}
+    locale="es"
+    backHref="/portfolio/"
+    backLabel={content.detail.backToPortfolio}
+    nextAlbum={nextAlbum}
+    nextHref={`/portfolio/${nextAlbum.id}/`}
+    ui={content.portfolioUi}
+  />
+</SiteScaffold>

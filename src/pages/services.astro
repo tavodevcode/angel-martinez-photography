@@ -1,0 +1,27 @@
+---
+import { getCollection } from 'astro:content';
+import SiteScaffold from '@/components/layout/SiteScaffold.astro';
+import ServicesCatalogSection from '@/components/sections/ServicesCatalogSection.astro';
+import { createContentProvider } from '@/lib/content';
+
+const provider = createContentProvider();
+const content = await provider.getMarketingContent('es');
+const services = (await getCollection('services')).sort((a, b) => a.data.order - b.data.order);
+---
+
+<SiteScaffold
+  title={`${content.brand} | Servicios`}
+  description="Explora paquetes de fotografía para bodas, eventos, retratos y campañas de producto."
+  brand={content.brand}
+  locale="es"
+  footer={content.footer}
+  pageTone="inner"
+>
+  <ServicesCatalogSection
+    services={services}
+    locale="es"
+    ui={content.servicesUi}
+    email={content.contact.email}
+    phone={content.contact.phone}
+  />
+</SiteScaffold>

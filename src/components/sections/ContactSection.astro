@@ -1,0 +1,36 @@
+---
+import type { ContactContent } from '@/lib/content/types';
+
+interface Props {
+  contact: ContactContent;
+}
+
+const { contact } = Astro.props;
+---
+
+<section class="overflow-hidden pb-14 pt-20" aria-label={contact.title}>
+  <div class="flex justify-center overflow-hidden">
+    <a href={`mailto:${contact.email}`} aria-label={contact.talkAlt}>
+      <h2 data-rise class="whitespace-nowrap text-center font-display text-[26vw] uppercase leading-[0.85] text-white transition hover:text-muted">
+        {contact.title}
+      </h2>
+    </a>
+  </div>
+
+  <div class="flex flex-col gap-10 px-6 pt-[110px] sm:flex-row sm:justify-between lg:px-20">
+    <div data-reveal class="flex flex-col gap-3">
+      <p class="font-caption text-[11px] uppercase tracking-[0.28em] text-muted">{contact.emailLabel}</p>
+      <a href={`mailto:${contact.email}`} class="font-body text-[17px] text-white transition hover:text-muted">
+        {contact.email}
+      </a>
+    </div>
+    <div data-reveal class="flex flex-col gap-3" style="--reveal-delay:100ms">
+      <p class="font-caption text-[11px] uppercase tracking-[0.28em] text-muted">{contact.phoneLabel}</p>
+      <p class="font-body text-[17px] text-white">{contact.phone}</p>
+    </div>
+    <div data-reveal class="flex flex-col gap-3" style="--reveal-delay:200ms">
+      <p class="font-caption text-[11px] uppercase tracking-[0.28em] text-muted">{contact.locationLabel}</p>
+      <p class="font-body text-[17px] text-white">{contact.location}</p>
+    </div>
+  </div>
+</section>

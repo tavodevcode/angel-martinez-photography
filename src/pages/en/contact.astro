@@ -1,0 +1,19 @@
+---
+import SiteScaffold from '@/components/layout/SiteScaffold.astro';
+import ContactFormSection from '@/components/sections/ContactFormSection.astro';
+import { createContentProvider } from '@/lib/content';
+
+const provider = createContentProvider();
+const content = await provider.getMarketingContent('en');
+---
+
+<SiteScaffold
+  title={`${content.brand} | Contact`}
+  description="Tell us about your next photo session and we will design the right scope and timeline."
+  brand={content.brand}
+  locale="en"
+  footer={content.footer}
+  pageTone="inner"
+>
+  <ContactFormSection contact={content.contact} ui={content.contactUi} />
+</SiteScaffold>

@@ -1,0 +1,14 @@
+.DS_Store
+node_modules/
+.astro/
+dist/
+*.tsbuildinfo
+pnpm-debug.log*
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Design working files (Pencil/Figma exports live outside git)
+image-import*.jpg
+image-import*.png
+*.fig

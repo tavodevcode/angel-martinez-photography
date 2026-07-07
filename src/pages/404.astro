@@ -1,0 +1,44 @@
+---
+import SiteScaffold from '@/components/layout/SiteScaffold.astro';
+import { createContentProvider } from '@/lib/content';
+
+const provider = createContentProvider();
+const content = await provider.getMarketingContent('es');
+const notFound = content.notFound;
+---
+
+<SiteScaffold
+  title={`${content.brand} | Página no encontrada`}
+  description="La página solicitada no existe."
+  brand={content.brand}
+  locale="es"
+  footer={content.footer}
+  pageTone="inner"
+>
+  <section class="flex flex-col items-center overflow-hidden px-6 pb-28 pt-32 text-center lg:pt-36">
+    <p class="font-meta text-[12px] uppercase tracking-[0.26em] text-muted">{notFound.eyebrow}</p>
+    <!-- Titular monumental 404 (1000px/1440 → 69.4vw) -->
+    <div class="flex w-full justify-center overflow-hidden py-[4.4vw]">
+      <h1 data-rise class="vt-page-title whitespace-nowrap font-display text-[69.4vw] uppercase leading-[0.8] text-white">404</h1>
+    </div>
+    <p class="w-[460px] max-w-full font-body text-[17px] font-medium leading-[1.7] text-white">
+      {notFound.description}
+    </p>
+    <div class="flex flex-wrap justify-center gap-x-14 gap-y-4 pt-16">
+      <a
+        href="/"
+        data-astro-prefetch="viewport"
+        class="font-caption text-[11px] font-semibold uppercase tracking-[0.24em] text-white underline-offset-4 transition hover:underline"
+      >
+        {notFound.homeLabel}
+      </a>
+      <a
+        href="/portfolio/"
+        data-astro-prefetch="viewport"
+        class="font-caption text-[11px] font-semibold uppercase tracking-[0.24em] text-white underline-offset-4 transition hover:underline"
+      >
+        {notFound.portfolioLabel}
+      </a>
+    </div>
+  </section>
+</SiteScaffold>

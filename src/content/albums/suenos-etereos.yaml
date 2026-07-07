@@ -1,0 +1,30 @@
+title:
+  es: Suenos etereos
+  en: Ethereal Dreams
+description:
+  es: Serie fine art que explora la luz difusa y las texturas suaves en retrato conceptual.
+  en: Fine art series exploring diffused light and soft textures in conceptual portraiture.
+category:
+  es: Fine Art
+  en: Fine Art
+dateLabel:
+  es: Agosto 2025
+  en: August 2025
+cover: ../../assets/images/album-suenos-cover.jpg
+coverAlt:
+  es: Retrato conceptual etereo
+  en: Ethereal conceptual portrait
+order: 2
+photos:
+  - src: ../../assets/images/album-suenos-1.jpg
+    alt:
+      es: Mood monocromatico
+      en: Monochrome mood
+  - src: ../../assets/images/album-suenos-2.jpg
+    alt:
+      es: Escena lifestyle
+      en: Lifestyle scene
+  - src: ../../assets/images/album-suenos-3.jpg
+    alt:
+      es: Textura difusa
+      en: Diffused texture

@@ -1,0 +1,41 @@
+---
+import { getCollection, type CollectionEntry } from 'astro:content';
+import SiteScaffold from '@/components/layout/SiteScaffold.astro';
+import ServiceDetailSection from '@/components/sections/ServiceDetailSection.astro';
+import { createContentProvider } from '@/lib/content';
+
+export async function getStaticPaths() {
+  const services = await getCollection('services');
+  return services.map((service) => ({ params: { slug: service.id }, props: { service } }));
+}
+
+interface Props {
+  service: CollectionEntry<'services'>;
+}
+
+const { service } = Astro.props;
+const provider = createContentProvider();
+const content = await provider.getMarketingContent('en');
+---
+
+<SiteScaffold
+  title={`${content.brand} | ${service.data.title.en}`}
+  description={service.data.description.en}
+  brand={content.brand}
+  locale="en"
+  footer={content.footer}
+  pageTone="inner"
+>
+  <ServiceDetailSection
+    service={service}
+    locale="en"
+    backHref="/en/services/"
+    backLabel={content.detail.backToServices}
+    packagesTitle={content.detail.packagesTitle}
+    ctaLabel={content.hero.ctaLabel}
+    ctaHref={content.hero.ctaHref}
+    ui={content.servicesUi}
+    email={content.contact.email}
+    phone={content.contact.phone}
+  />
+</SiteScaffold>

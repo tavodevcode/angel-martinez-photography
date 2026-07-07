@@ -1,0 +1,40 @@
+---
+import type { ServiceItem } from '@/lib/content/types';
+
+interface Props {
+  services: ServiceItem[];
+  sectionLabel: string;
+  indexLabel: string;
+}
+
+const { services, sectionLabel, indexLabel } = Astro.props;
+---
+
+<section class="px-6 pb-[140px] pt-[160px] lg:px-20" aria-label={sectionLabel}>
+  <div data-reveal class="mb-[88px] flex items-end justify-between">
+    <p class="font-caption text-[12px] uppercase tracking-[0.28em] text-muted">{sectionLabel}</p>
+    <p class="font-caption text-[12px] uppercase tracking-[0.28em] text-muted">{indexLabel}</p>
+  </div>
+
+  <ul class="flex flex-col gap-16">
+    {services.map((service, index) => (
+      <li data-reveal style={`--reveal-delay:${index * 80}ms`} class="border-b border-white/10 pb-16 last:border-b-0 last:pb-0">
+        <a
+          href={service.href}
+          data-astro-prefetch="viewport"
+          class="group flex flex-col gap-4 md:flex-row md:items-end md:gap-12"
+        >
+          <span class="w-14 shrink-0 pb-2.5 font-caption text-[13px] tracking-[0.16em] text-muted transition group-hover:text-white">
+            ({String(index + 1).padStart(2, '0')})
+          </span>
+          <span class="flex-1 font-display text-[clamp(34px,4.2vw,60px)] uppercase leading-[0.95] text-white transition-transform duration-500 group-hover:translate-x-3 md:group-hover:translate-x-5">
+            {service.title}
+          </span>
+          <span class="w-full shrink-0 pb-2 font-body text-[15px] leading-[1.55] text-muted md:w-[360px]">
+            {service.description}
+          </span>
+        </a>
+      </li>
+    ))}
+  </ul>
+</section>

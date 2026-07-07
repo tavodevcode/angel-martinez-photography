@@ -1,0 +1,11 @@
+title:
+  es: Fotografia de producto
+  en: Product Photography
+description:
+  es: Imagen comercial para e-commerce, catalogo y campañas de performance.
+  en: Commercial imagery designed for e-commerce, catalogs, and paid campaigns.
+image: ../../assets/images/service-product.jpg
+imageAlt:
+  es: Fotografia de producto
+  en: Product photography
+order: 4

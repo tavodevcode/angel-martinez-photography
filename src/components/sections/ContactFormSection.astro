@@ -1,0 +1,259 @@
+---
+import { Picture } from 'astro:assets';
+import type { ContactContent, ContactUiContent } from '@/lib/content/types';
+
+interface Props {
+  contact: ContactContent;
+  ui: ContactUiContent;
+}
+
+const { contact, ui } = Astro.props;
+---
+
+<section class="overflow-hidden pt-28 lg:pt-32" aria-label={ui.sectionLabel}>
+  <!-- Cejilla + titular monumental HABLEMOS (370px/1440 → 25.7vw) -->
+  <div class="flex flex-col items-center gap-6 pb-10 pt-[4.5vw]">
+    <p class="font-caption text-[11px] uppercase tracking-[0.24em] text-muted">{ui.eyebrow}</p>
+    <div class="flex w-full justify-center overflow-hidden">
+      <h1 data-rise class="vt-page-title whitespace-nowrap text-center font-display text-[25.7vw] uppercase leading-[0.84] text-white">
+        {contact.title}
+      </h1>
+    </div>
+  </div>
+
+  <!-- Retícula editorial: etiqueta / párrafo / enlace -->
+  <div class="flex flex-col gap-8 px-6 pb-16 pt-10 lg:grid lg:grid-cols-[300px_1fr_300px] lg:items-start lg:px-16 lg:pb-[90px]">
+    <p class="font-caption text-[11px] uppercase tracking-[0.24em] text-muted">{ui.sectionLabel}</p>
+    <div class="flex justify-center">
+      <p class="w-[440px] max-w-full text-center font-body text-[20px] font-medium leading-[1.7] text-white">
+        {contact.description}
+      </p>
+    </div>
+    <div class="flex lg:justify-end">
+      <a
+        href={`mailto:${contact.email}`}
+        class="font-caption text-[11px] font-semibold uppercase tracking-[0.24em] text-white underline-offset-4 transition hover:underline"
+      >
+        {ui.directLinkLabel}
+      </a>
+    </div>
+  </div>
+
+  <!-- Fila formulario + tarjeta de estudio -->
+  <div class="flex flex-col gap-16 px-6 pb-16 lg:flex-row lg:gap-[88px] lg:px-16 lg:pb-[90px]">
+    <form
+      data-reveal
+      class="flex flex-1 flex-col gap-9"
+      data-brief="mailto"
+      data-email={contact.email}
+      data-subject={ui.mailSubjectPrefix}
+      aria-label={ui.sectionLabel}
+    >
+      <div class="grid gap-8 sm:grid-cols-2">
+        <div class="flex flex-col gap-2.5">
+          <label for="brief-name" class="font-caption text-[10px] uppercase tracking-[0.2em] text-muted">
+            {ui.nameLabel}
+          </label>
+          <input
+            id="brief-name"
+            name="name"
+            type="text"
+            required
+            placeholder={ui.namePlaceholder}
+            data-label={ui.nameLabel}
+            class="w-full border-b border-white/20 bg-transparent pb-3 font-body text-[15px] text-white placeholder:text-muted focus:border-white focus:outline-none"
+          />
+        </div>
+        <div class="flex flex-col gap-2.5">
+          <label for="brief-email" class="font-caption text-[10px] uppercase tracking-[0.2em] text-muted">
+            {contact.emailLabel}
+          </label>
+          <input
+            id="brief-email"
+            name="email"
+            type="email"
+            required
+            placeholder={ui.emailPlaceholder}
+            data-label={contact.emailLabel}
+            class="w-full border-b border-white/20 bg-transparent pb-3 font-body text-[15px] text-white placeholder:text-muted focus:border-white focus:outline-none"
+          />
+        </div>
+      </div>
+
+      <fieldset class="flex flex-col gap-3">
+        <legend class="pb-3 font-caption text-[10px] uppercase tracking-[0.2em] text-muted">
+          {ui.projectTypeLabel}
+        </legend>
+        <div class="flex flex-wrap gap-2.5">
+          {ui.projectTypes.map((type, index) => (
+            <label class="cursor-pointer">
+              <input
+                type="radio"
+                name="projectType"
+                value={type}
+                checked={index === 0}
+                data-label={ui.projectTypeLabel}
+                class="peer sr-only"
+              />
+              <span class="inline-flex rounded-[2px] border border-white/20 px-3.5 py-2 font-caption text-[10px] uppercase tracking-[0.15em] text-muted transition peer-checked:border-white peer-checked:bg-white peer-checked:font-semibold peer-checked:text-black peer-focus-visible:ring-1 peer-focus-visible:ring-white peer-focus-visible:ring-offset-2 peer-focus-visible:ring-offset-black">
+                {type}
+              </span>
+            </label>
+          ))}
+        </div>
+      </fieldset>
+
+      <div class="grid gap-8 sm:grid-cols-2">
+        <div class="flex flex-col gap-2.5">
+          <label for="brief-date" class="font-caption text-[10px] uppercase tracking-[0.2em] text-muted">
+            {ui.dateLabel}
+          </label>
+          <input
+            id="brief-date"
+            name="date"
+            type="text"
+            placeholder={ui.datePlaceholder}
+            data-label={ui.dateLabel}
+            class="w-full border-b border-white/20 bg-transparent pb-3 font-body text-[15px] text-white placeholder:text-muted focus:border-white focus:outline-none"
+          />
+        </div>
+        <div class="flex flex-col gap-2.5">
+          <label for="brief-location" class="font-caption text-[10px] uppercase tracking-[0.2em] text-muted">
+            {ui.locationFieldLabel}
+          </label>
+          <input
+            id="brief-location"
+            name="location"
+            type="text"
+            placeholder={ui.locationPlaceholder}
+            data-label={ui.locationFieldLabel}
+            class="w-full border-b border-white/20 bg-transparent pb-3 font-body text-[15px] text-white placeholder:text-muted focus:border-white focus:outline-none"
+          />
+        </div>
+      </div>
+
+      <div class="flex flex-col gap-2.5">
+        <label for="brief-story" class="font-caption text-[10px] uppercase tracking-[0.2em] text-muted">
+          {ui.storyLabel}
+        </label>
+        <textarea
+          id="brief-story"
+          name="story"
+          rows="4"
+          placeholder={ui.storyPlaceholder}
+          data-label={ui.storyLabel}
+          class="w-full resize-none border-b border-white/20 bg-transparent pb-3 pt-3 font-body text-[15px] leading-[1.6] text-white placeholder:text-muted focus:border-white focus:outline-none"></textarea>
+      </div>
+
+      <button
+        type="submit"
+        class="inline-flex w-fit items-center gap-2.5 rounded-[2px] bg-white px-[30px] py-4 font-caption text-[12px] font-semibold uppercase tracking-[0.18em] text-black transition hover:bg-accent"
+      >
+        {ui.submitLabel}
+        <svg
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+          class="h-3.5 w-3.5"
+          aria-hidden="true"
+        >
+          <path d="M5 12h14"></path>
+          <path d="m12 5 7 7-7 7"></path>
+        </svg>
+      </button>
+    </form>
+
+    <aside data-reveal class="flex w-full flex-col gap-7 lg:w-[400px] lg:shrink-0" style="--reveal-delay:120ms" aria-label={contact.locationLabel}>
+      <div data-zoom class="relative h-[290px] overflow-hidden rounded-xl shadow-[0_12px_24px_rgba(0,0,0,0.7)]">
+        <Picture
+          src={contact.frameImage}
+          alt={contact.frameAlt}
+          widths={[420, 680, 920]}
+          sizes="(max-width: 1024px) 100vw, 400px"
+          formats={['avif', 'webp']}
+          loading="lazy"
+          class="h-full w-full object-cover"
+        />
+        <div class="absolute inset-x-0 bottom-0 flex items-center justify-between bg-black/65 px-4 py-2.5">
+          <span class="font-meta text-[10px] uppercase tracking-[0.12em] text-white">{ui.studioMeta}</span>
+        </div>
+      </div>
+
+      <div class="flex flex-col gap-1.5">
+        <p class="font-caption text-[10px] uppercase tracking-[0.2em] text-muted">{contact.emailLabel}</p>
+        <a href={`mailto:${contact.email}`} class="font-meta text-[13px] text-white transition hover:text-muted">
+          {contact.email}
+        </a>
+      </div>
+      <div class="flex flex-col gap-1.5">
+        <p class="font-caption text-[10px] uppercase tracking-[0.2em] text-muted">{contact.phoneLabel}</p>
+        <p class="font-meta text-[13px] text-white">{contact.phone}</p>
+      </div>
+      <div class="flex flex-col gap-1.5">
+        <p class="font-caption text-[10px] uppercase tracking-[0.2em] text-muted">{contact.locationLabel}</p>
+        <p class="font-meta text-[13px] text-white">{contact.location}</p>
+      </div>
+      <div class="flex flex-col gap-1.5">
+        <p class="font-caption text-[10px] uppercase tracking-[0.2em] text-muted">{ui.hoursLabel}</p>
+        <p class="font-meta text-[13px] text-white">{ui.hours}</p>
+      </div>
+
+      <div class="flex flex-wrap gap-5">
+        {contact.socials.map((social) => (
+          <a
+            href={social.href}
+            target="_blank"
+            rel="noopener noreferrer"
+            class="font-caption text-[10px] font-semibold uppercase tracking-[0.18em] text-white transition hover:text-muted"
+          >
+            {social.label}
+          </a>
+        ))}
+      </div>
+    </aside>
+  </div>
+
+  <!-- Email monumental (86px/1440 → 5.97vw) -->
+  <div class="flex flex-col items-center gap-4 overflow-hidden pb-20 pt-14">
+    <p class="font-caption text-[11px] uppercase tracking-[0.24em] text-muted">{ui.directEyebrow}</p>
+    <a href={`mailto:${contact.email}`} aria-label={contact.talkAlt} class="flex max-w-full justify-center overflow-hidden">
+      <p data-rise class="whitespace-nowrap text-center font-display text-[clamp(18px,5.97vw,86px)] uppercase leading-[0.9] text-white transition hover:text-muted">
+        {contact.email}
+      </p>
+    </a>
+  </div>
+</section>
+
+<script is:inline>
+  // Sitio estático sin backend: el submit arma un mailto: con subject/body
+  // prefilled desde los campos. Delegado en document para sobrevivir a las
+  // view transitions de Astro; el guard evita doble binding.
+  if (!window.__briefMailtoBound) {
+    window.__briefMailtoBound = true;
+    document.addEventListener('submit', (event) => {
+      const form = event.target;
+      if (!(form instanceof HTMLFormElement) || form.dataset.brief !== 'mailto') return;
+      event.preventDefault();
+
+      const lines = [];
+      let senderName = '';
+      for (const element of Array.from(form.elements)) {
+        const isField = element instanceof HTMLInputElement || element instanceof HTMLTextAreaElement;
+        if (!isField || !element.dataset.label) continue;
+        if (element.type === 'radio' && !element.checked) continue;
+        const value = element.value.trim();
+        if (!value) continue;
+        if (element.name === 'name') senderName = value;
+        lines.push(`${element.dataset.label}: ${value}`);
+      }
+
+      const subjectBase = form.dataset.subject || '';
+      const subject = senderName ? `${subjectBase} — ${senderName}` : subjectBase;
+      const email = form.dataset.email || '';
+      window.location.href = `mailto:${email}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(lines.join('\n'))}`;
+    });
+  }
+</script>

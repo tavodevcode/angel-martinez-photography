@@ -1,0 +1,34 @@
+title:
+  es: Mariana & Diego
+  en: Mariana & Diego
+description:
+  es: Una boda al atardecer con luz dorada, celebrada entre jardines y arquitectura colonial.
+  en: A sunset wedding bathed in golden light, celebrated among gardens and colonial architecture.
+category:
+  es: Boda
+  en: Wedding
+dateLabel:
+  es: Octubre 2025
+  en: October 2025
+cover: ../../assets/images/album-boda-cover.jpg
+coverAlt:
+  es: Pareja de novios en la hora dorada
+  en: Wedding couple at golden hour
+order: 1
+photos:
+  - src: ../../assets/images/album-boda-1.jpg
+    alt:
+      es: Mesa del banquete
+      en: Banquet table setting
+  - src: ../../assets/images/album-boda-2.jpg
+    alt:
+      es: Los anillos
+      en: The rings
+  - src: ../../assets/images/album-boda-3.jpg
+    alt:
+      es: Arreglo floral
+      en: Floral arrangement
+  - src: ../../assets/images/album-boda-4.jpg
+    alt:
+      es: El vestido
+      en: The dress

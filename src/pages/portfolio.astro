@@ -1,0 +1,27 @@
+---
+import { getCollection } from 'astro:content';
+import SiteScaffold from '@/components/layout/SiteScaffold.astro';
+import PortfolioCollectionSection from '@/components/sections/PortfolioCollectionSection.astro';
+import { createContentProvider } from '@/lib/content';
+
+const provider = createContentProvider();
+const content = await provider.getMarketingContent('es');
+const albums = (await getCollection('albums')).sort((a, b) => a.data.order - b.data.order);
+---
+
+<SiteScaffold
+  title={`${content.brand} | Portafolio`}
+  description="Álbumes por evento: bodas, editorial y comercial con dirección visual monumental."
+  brand={content.brand}
+  locale="es"
+  footer={content.footer}
+  pageTone="inner"
+>
+  <PortfolioCollectionSection
+    albums={albums}
+    extras={content.portfolio}
+    ui={content.portfolioUi}
+    locale="es"
+    albumBase="/portfolio"
+  />
+</SiteScaffold>

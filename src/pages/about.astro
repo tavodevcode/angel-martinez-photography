@@ -1,0 +1,24 @@
+---
+import SiteScaffold from '@/components/layout/SiteScaffold.astro';
+import AboutStudioSection from '@/components/sections/AboutStudioSection.astro';
+import { createContentProvider } from '@/lib/content';
+
+const provider = createContentProvider();
+const content = await provider.getMarketingContent('es');
+---
+
+<SiteScaffold
+  title={`${content.brand} | Nosotros`}
+  description="Conoce la visión, estilo y proceso creativo de nuestro estudio fotográfico."
+  brand={content.brand}
+  locale="es"
+  footer={content.footer}
+  pageTone="inner"
+>
+  <AboutStudioSection
+    about={content.about}
+    ui={content.aboutUi}
+    portfolioHref="/portfolio/"
+    contactHref="/contact/"
+  />
+</SiteScaffold>

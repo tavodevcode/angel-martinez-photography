@@ -1,0 +1,67 @@
+---
+import { Picture } from 'astro:assets';
+import type { PortfolioItem } from '@/lib/content/types';
+
+interface Props {
+  portfolio: PortfolioItem[];
+  label: string;
+  title: string;
+  portfolioHref: string;
+}
+
+const { portfolio, label, title, portfolioHref } = Astro.props;
+const banner = portfolio[1] ?? portfolio[0];
+const frames = portfolio.slice(2, 5);
+// Metadatos decorativos de cámara, como en el diseño (no se traducen).
+const metas = ['INT. 01 — 24MM · F/5.6 · ISO 100', 'INT. 02 — 35MM · F/4.0 · ISO 200', 'INT. 03 — 50MM · F/2.8 · ISO 400'];
+---
+
+<section aria-label={title}>
+  <a
+    href={portfolioHref}
+    data-astro-prefetch="viewport"
+    data-zoom
+    class="relative flex h-[min(720px,80svh)] flex-col justify-between overflow-hidden pt-14"
+  >
+    <Picture
+      src={banner.image}
+      alt={banner.title}
+      widths={[768, 1280, 1920]}
+      sizes="100vw"
+      formats={['avif', 'webp']}
+      loading="lazy"
+      class="absolute inset-0 h-full w-full object-cover"
+    />
+    <div class="absolute inset-0 bg-black/25" aria-hidden="true"></div>
+    <div class="relative z-10 flex justify-end px-6 lg:px-20">
+      <p data-reveal class="font-caption text-[12px] uppercase tracking-[0.28em] text-white">{label}</p>
+    </div>
+    <div class="relative z-10 flex justify-center overflow-hidden">
+      <p data-rise class="whitespace-nowrap text-center font-display text-[12.5vw] uppercase leading-[0.84] text-white">{title}</p>
+    </div>
+  </a>
+
+  <div class="grid grid-cols-1 gap-8 px-6 pt-[120px] sm:grid-cols-3 lg:px-20">
+    {frames.map((frame, index) => (
+      <figure data-reveal data-zoom class="flex flex-col gap-4" style={`--reveal-delay:${index * 100}ms`}>
+        <div class="relative h-[300px] overflow-hidden rounded-xl shadow-[0_12px_24px_rgba(0,0,0,0.7)]">
+          <Picture
+            src={frame.image}
+            alt={frame.title}
+            widths={[420, 640, 900]}
+            sizes="(max-width: 640px) 100vw, 33vw"
+            formats={['avif', 'webp']}
+            loading="lazy"
+            class="h-full w-full object-cover"
+          />
+          <div class="absolute inset-x-0 bottom-0 flex items-center justify-between bg-black/65 px-4 py-2.5">
+            <span class="font-meta text-[10px] tracking-[0.12em] text-white">{metas[index]}</span>
+          </div>
+        </div>
+        <figcaption class="font-caption text-[11px] uppercase tracking-[0.18em] text-muted">
+          {frame.title} — {frame.category}
+        </figcaption>
+      </figure>
+    ))}
+  </div>
+</section>

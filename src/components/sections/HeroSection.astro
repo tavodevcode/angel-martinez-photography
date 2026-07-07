@@ -1,0 +1,41 @@
+---
+import { Picture } from 'astro:assets';
+import type { HeroContent } from '@/lib/content/types';
+
+interface Props {
+  hero: HeroContent;
+}
+
+const { hero } = Astro.props;
+---
+
+<section class="relative flex h-[min(800px,92svh)] flex-col justify-between overflow-hidden" aria-label={hero.eyebrow}>
+  <Picture
+    src={hero.image}
+    alt={hero.imageAlt}
+    widths={[768, 1280, 1920]}
+    sizes="100vw"
+    formats={['avif', 'webp']}
+    loading="eager"
+    fetchpriority="high"
+    class="anim-kenburns absolute inset-0 h-full w-full object-cover"
+  />
+  <div class="absolute inset-0 bg-black/30" aria-hidden="true"></div>
+
+  <div class="relative z-10 flex items-start justify-between gap-6 px-6 pt-28 lg:px-12 lg:pt-32">
+    <p data-reveal class="font-caption text-[11px] uppercase tracking-[0.24em] text-white">{hero.eyebrow}</p>
+    <p data-reveal class="hidden font-caption text-[11px] uppercase tracking-[0.24em] text-white sm:block" style="--reveal-delay:120ms">{hero.labelRight}</p>
+  </div>
+
+  <div class="relative z-10 flex justify-center px-6">
+    <p data-reveal class="w-[460px] max-w-full text-center font-body text-[17px] font-medium leading-[1.65] text-white" style="--reveal-delay:200ms">
+      {hero.description}
+    </p>
+  </div>
+
+  <div class="relative z-10 flex justify-center overflow-hidden">
+    <h1 data-rise class="whitespace-nowrap text-center font-display text-[16.6vw] uppercase leading-[0.84] text-white" style="--reveal-delay:120ms">
+      {hero.title}
+    </h1>
+  </div>
+</section>
