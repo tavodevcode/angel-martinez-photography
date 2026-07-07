@@ -1,12 +1,18 @@
 /** @type {import('tailwindcss').Config} */
 export default {
   content: ['./src/**/*.{astro,html,js,jsx,md,mdx,svelte,ts,tsx,vue}'],
+  future: {
+    // En touch el primer tap activa :hover y se queda pegado (p. ej. el zoom
+    // de las portadas del portafolio). Esto limita hover:/group-hover: a
+    // dispositivos con puntero real via @media (hover: hover) and (pointer: fine).
+    hoverOnlyWhenSupported: true,
+  },
   theme: {
     extend: {
       fontFamily: {
         display: ['Anton', 'system-ui', 'sans-serif'],
         body: ['"Geist Variable"', 'system-ui', 'sans-serif'],
-        caption: ['"Inter Variable"', 'system-ui', 'sans-serif'],
+        caption: ['"Geist Variable"', 'system-ui', 'sans-serif'],
         meta: ['"IBM Plex Mono"', 'ui-monospace', 'monospace'],
       },
       colors: {
