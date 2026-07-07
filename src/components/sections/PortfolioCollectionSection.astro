@@ -1,0 +1,236 @@
+---
+import { Picture } from 'astro:assets';
+import type { CollectionEntry } from 'astro:content';
+import type { Locale, PortfolioItem, PortfolioUiContent } from '@/lib/content/types';
+
+interface Props {
+  albums: CollectionEntry<'albums'>[];
+  extras: PortfolioItem[];
+  ui: PortfolioUiContent;
+  locale: Locale;
+  albumBase: string;
+}
+
+const { albums, extras, ui, locale, albumBase } = Astro.props;
+
+// Metadatos decorativos de cámara y referencias, como en el diseño (no se traducen).
+const albumMetas = ['35MM · F/1.8', '50MM · F/1.8', '85MM · F/2.0'];
+const extraMetas = ['50MM · F/2.8', '85MM · F/2.0', '28MM · F/4.0', '85MM · F/1.4'];
+const extraRefs = ['REF AM-2502', 'REF AM-2406', 'REF AM-2410', 'REF AM-2504'];
+
+const [firstAlbum, ...restAlbums] = albums;
+const pairRow = extras.slice(0, 2);
+const asymmetricRow = extras.slice(2, 4);
+
+const countText = `${String(albums.length).padStart(2, '0')} ${ui.albumsCountLabel}`;
+const albumRef = (album: CollectionEntry<'albums'>) =>
+  `${album.data.dateLabel[locale]} · ${album.data.photos.length + 1} ${ui.piecesUnit} · REF AM-${String(2300 + album.data.order).padStart(4, '0')}`;
+---
+
+<section class="pb-24 pt-28 lg:pb-40 lg:pt-36" aria-label={ui.title}>
+  <div class="flex flex-wrap items-start justify-between gap-3 px-6 lg:px-16">
+    <p class="font-caption text-[11px] uppercase tracking-[0.24em] text-muted">{ui.eyebrowLeft}</p>
+    <p class="font-caption text-[11px] uppercase tracking-[0.24em] text-muted">{ui.eyebrowRight}</p>
+  </div>
+
+  <div class="mt-10 flex justify-center overflow-hidden lg:mt-[76px]">
+    <h1 data-rise class="vt-page-title whitespace-nowrap text-center font-display text-[26.7vw] uppercase leading-[0.84] text-white">
+      {ui.title}
+    </h1>
+  </div>
+
+  <div class="mt-12 flex flex-wrap items-center justify-between gap-4 px-6 lg:mt-[84px] lg:px-16">
+    <ul class="flex flex-wrap items-center gap-x-[26px] gap-y-2" aria-label={ui.title}>
+      {ui.filters.map((filter, index) => (
+        <Fragment>
+          {index > 0 && <li aria-hidden="true" class="font-caption text-[11px] text-muted">·</li>}
+          <li
+            class={`font-caption text-[11px] uppercase tracking-[0.2em] ${index === 0 ? 'font-semibold text-white' : 'text-muted'}`}
+          >
+            {filter}
+          </li>
+        </Fragment>
+      ))}
+    </ul>
+    <p class="font-caption text-[11px] uppercase tracking-[0.2em] text-muted">{countText}</p>
+  </div>
+
+  <div class="mt-[92px] flex flex-col gap-16 px-6 lg:gap-24 lg:px-16">
+    {firstAlbum && (
+      <a
+        href={`${albumBase}/${firstAlbum.id}/`}
+        data-astro-prefetch="viewport"
+        data-reveal
+        class="group flex flex-col gap-5"
+      >
+        <div
+          transition:name={`album-${firstAlbum.id}`}
+          class="relative h-[320px] overflow-hidden rounded-xl shadow-[0_12px_24px_rgba(0,0,0,0.7)] sm:h-[440px] lg:h-[560px]"
+        >
+          <Picture
+            src={firstAlbum.data.cover}
+            alt={firstAlbum.data.coverAlt[locale]}
+            widths={[768, 1280, 1920]}
+            sizes="100vw"
+            formats={['avif', 'webp']}
+            loading="eager"
+            class="h-full w-full object-cover transition duration-700 group-hover:scale-[1.02]"
+          />
+          <div class="absolute inset-x-0 bottom-0 flex items-center justify-between bg-black/65 px-4 py-2.5">
+            <span class="font-meta text-[10px] uppercase tracking-[0.12em] text-white">
+              ALB. 01 — {firstAlbum.data.category[locale]} · {albumMetas[0]}
+            </span>
+            {firstAlbum.data.photos[0] && (
+              <Picture
+                src={firstAlbum.data.photos[0].src}
+                alt=""
+                aria-hidden="true"
+                widths={[104]}
+                sizes="52px"
+                formats={['avif', 'webp']}
+                loading="lazy"
+                class="h-9 w-[52px] rounded object-cover"
+              />
+            )}
+          </div>
+        </div>
+        <div class="flex flex-wrap items-end justify-between gap-3">
+          <div class="flex flex-col gap-2.5">
+            <p class="font-caption text-[11px] uppercase tracking-[0.24em] text-muted">
+              {firstAlbum.data.category[locale]}
+            </p>
+            <p class="font-body text-[20px] font-medium text-white lg:text-[24px]">{firstAlbum.data.title[locale]}</p>
+          </div>
+          <p class="font-meta text-[11px] uppercase tracking-[0.12em] text-muted">{albumRef(firstAlbum)}</p>
+        </div>
+      </a>
+    )}
+
+    {pairRow.length > 0 && (
+      <div class="grid grid-cols-1 gap-10 sm:grid-cols-2 lg:gap-8">
+        {pairRow.map((item, index) => (
+          <figure data-reveal data-zoom class="flex flex-col gap-5" style={`--reveal-delay:${index * 90}ms`}>
+            <div class="relative h-[280px] overflow-hidden rounded-xl shadow-[0_12px_24px_rgba(0,0,0,0.7)] lg:h-[430px]">
+              <Picture
+                src={item.image}
+                alt={item.title}
+                widths={[420, 720, 1080]}
+                sizes="(max-width: 640px) 100vw, 50vw"
+                formats={['avif', 'webp']}
+                loading="lazy"
+                class="h-full w-full object-cover"
+              />
+              <div class="absolute inset-x-0 bottom-0 flex items-center justify-between bg-black/65 px-4 py-2.5">
+                <span class="font-meta text-[10px] uppercase tracking-[0.12em] text-white">
+                  ALB. {String(index + 2).padStart(2, '0')} — {item.category} · {extraMetas[index]}
+                </span>
+                <Picture
+                  src={pairRow[(index + 1) % pairRow.length].image}
+                  alt=""
+                  aria-hidden="true"
+                  widths={[104]}
+                  sizes="52px"
+                  formats={['avif', 'webp']}
+                  loading="lazy"
+                  class="h-9 w-[52px] rounded object-cover"
+                />
+              </div>
+            </div>
+            <figcaption class="flex flex-wrap items-end justify-between gap-3">
+              <div class="flex flex-col gap-2.5">
+                <p class="font-caption text-[11px] uppercase tracking-[0.24em] text-muted">{item.category}</p>
+                <p class="font-body text-[20px] font-medium text-white lg:text-[24px]">{item.title}</p>
+              </div>
+              <p class="font-meta text-[11px] uppercase tracking-[0.12em] text-muted">{extraRefs[index]}</p>
+            </figcaption>
+          </figure>
+        ))}
+      </div>
+    )}
+
+    {asymmetricRow.length > 0 && (
+      <div class="grid grid-cols-1 gap-10 sm:grid-cols-[43fr_57fr] lg:gap-8">
+        {asymmetricRow.map((item, index) => (
+          <figure data-reveal data-zoom class="flex flex-col gap-5" style={`--reveal-delay:${index * 90}ms`}>
+            <div class="relative h-[280px] overflow-hidden rounded-xl shadow-[0_12px_24px_rgba(0,0,0,0.7)] lg:h-[470px]">
+              <Picture
+                src={item.image}
+                alt={item.title}
+                widths={[420, 720, 1080]}
+                sizes="(max-width: 640px) 100vw, 50vw"
+                formats={['avif', 'webp']}
+                loading="lazy"
+                class="h-full w-full object-cover"
+              />
+              <div class="absolute inset-x-0 bottom-0 flex items-center justify-between bg-black/65 px-4 py-2.5">
+                <span class="font-meta text-[10px] uppercase tracking-[0.12em] text-white">
+                  ALB. {String(index + 4).padStart(2, '0')} — {item.category} · {extraMetas[index + 2]}
+                </span>
+                <Picture
+                  src={asymmetricRow[(index + 1) % asymmetricRow.length].image}
+                  alt=""
+                  aria-hidden="true"
+                  widths={[104]}
+                  sizes="52px"
+                  formats={['avif', 'webp']}
+                  loading="lazy"
+                  class="h-9 w-[52px] rounded object-cover"
+                />
+              </div>
+            </div>
+            <figcaption class="flex flex-wrap items-end justify-between gap-3">
+              <div class="flex flex-col gap-2.5">
+                <p class="font-caption text-[11px] uppercase tracking-[0.24em] text-muted">{item.category}</p>
+                <p class="font-body text-[20px] font-medium text-white lg:text-[24px]">{item.title}</p>
+              </div>
+              <p class="font-meta text-[11px] uppercase tracking-[0.12em] text-muted">{extraRefs[index + 2]}</p>
+            </figcaption>
+          </figure>
+        ))}
+      </div>
+    )}
+
+    {restAlbums.map((album, index) => (
+      <a href={`${albumBase}/${album.id}/`} data-astro-prefetch="viewport" data-reveal class="group flex flex-col gap-5">
+        <div
+          transition:name={`album-${album.id}`}
+          class="relative h-[320px] overflow-hidden rounded-xl shadow-[0_12px_24px_rgba(0,0,0,0.7)] sm:h-[420px] lg:h-[520px]"
+        >
+          <Picture
+            src={album.data.cover}
+            alt={album.data.coverAlt[locale]}
+            widths={[768, 1280, 1920]}
+            sizes="100vw"
+            formats={['avif', 'webp']}
+            loading="lazy"
+            class="h-full w-full object-cover transition duration-700 group-hover:scale-[1.02]"
+          />
+          <div class="absolute inset-x-0 bottom-0 flex items-center justify-between bg-black/65 px-4 py-2.5">
+            <span class="font-meta text-[10px] uppercase tracking-[0.12em] text-white">
+              ALB. {String(index + 6).padStart(2, '0')} — {album.data.category[locale]} · {albumMetas[(index + 1) % albumMetas.length]}
+            </span>
+            {album.data.photos[0] && (
+              <Picture
+                src={album.data.photos[0].src}
+                alt=""
+                aria-hidden="true"
+                widths={[104]}
+                sizes="52px"
+                formats={['avif', 'webp']}
+                loading="lazy"
+                class="h-9 w-[52px] rounded object-cover"
+              />
+            )}
+          </div>
+        </div>
+        <div class="flex flex-wrap items-end justify-between gap-3">
+          <div class="flex flex-col gap-2.5">
+            <p class="font-caption text-[11px] uppercase tracking-[0.24em] text-muted">{album.data.category[locale]}</p>
+            <p class="font-body text-[20px] font-medium text-white lg:text-[24px]">{album.data.title[locale]}</p>
+          </div>
+          <p class="font-meta text-[11px] uppercase tracking-[0.12em] text-muted">{albumRef(album)}</p>
+        </div>
+      </a>
+    ))}
+  </div>
+</section>

@@ -1,7 +1,6 @@
 ---
 import SiteScaffold from '@/components/layout/SiteScaffold.astro';
-import ContactSection from '@/components/sections/ContactSection.astro';
-import PageHeader from '@/components/sections/PageHeader.astro';
+import ContactFormSection from '@/components/sections/ContactFormSection.astro';
 import { createContentProvider } from '@/lib/content';
 
 const provider = createContentProvider();
@@ -12,17 +11,9 @@ const content = await provider.getMarketingContent('es');
   title={`${content.brand} | Contacto`}
   description="Contáctanos para planear tu próxima sesión de fotos editorial o comercial."
   brand={content.brand}
-  nav={content.nav}
   locale="es"
-  homeHref="/"
-  ctaLabel={content.hero.ctaLabel}
-  ctaHref={content.hero.ctaHref}
+  footer={content.footer}
   pageTone="inner"
 >
-  <PageHeader
-    eyebrow="Navegacion editorial"
-    title="Contacto"
-    subtitle="Cuéntanos el tipo de sesión, fechas y objetivo creativo. Te proponemos alcance, tiempos y producción."
-  />
-  <ContactSection contact={content.contact} nav={content.nav} />
+  <ContactFormSection contact={content.contact} ui={content.contactUi} />
 </SiteScaffold>

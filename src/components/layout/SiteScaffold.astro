@@ -2,21 +2,18 @@
 import BaseLayout from '@/layouts/BaseLayout.astro';
 import Footer from '@/components/layout/Footer.astro';
 import FloatingNav from '@/components/layout/FloatingNav';
-import type { Locale, NavItem } from '@/lib/content/types';
+import type { FooterContent, Locale } from '@/lib/content/types';
 
 interface Props {
   title: string;
   description: string;
   brand: string;
-  nav: NavItem[];
   locale: Locale;
-  homeHref: string;
-  ctaLabel: string;
-  ctaHref: string;
+  footer: FooterContent;
   pageTone?: 'home' | 'inner';
 }
 
-const { title, description, brand, nav, locale, homeHref, ctaLabel, ctaHref } = Astro.props;
+const { title, description, brand, locale, footer } = Astro.props;
 const windowTransition = {
   forwards: {
     old: { name: 'vt-window-out', duration: '0.34s', easing: 'cubic-bezier(0.33, 0, 0.67, 1)', fillMode: 'both' },
@@ -31,15 +28,7 @@ const windowTransition = {
 
 <BaseLayout title={title} description={description} locale={locale}>
   <div transition:persist>
-    <FloatingNav
-      client:load
-      brand={brand}
-      links={nav}
-      locale={locale}
-      homeHref={homeHref}
-      ctaLabel={ctaLabel}
-      ctaHref={ctaHref}
-    />
+    <FloatingNav client:load brand={brand} initialPath={Astro.url.pathname} />
   </div>
   <div transition:persist aria-hidden="true" class="pointer-events-none fixed inset-0 z-10">
     <div class="absolute inset-y-0 left-1/2 w-px -translate-x-1/2 bg-white/10" />
@@ -48,6 +37,6 @@ const windowTransition = {
     <slot />
   </main>
   <div transition:persist>
-    <Footer brand={brand} locale={locale} ctaHref={ctaHref} />
+    <Footer brand={brand} locale={locale} footer={footer} />
   </div>
 </BaseLayout>

@@ -1,9 +1,6 @@
 ---
 import SiteScaffold from '@/components/layout/SiteScaffold.astro';
-import AboutSection from '@/components/sections/AboutSection.astro';
-import ContactSection from '@/components/sections/ContactSection.astro';
-import GallerySection from '@/components/sections/GallerySection.astro';
-import PageHeader from '@/components/sections/PageHeader.astro';
+import AboutStudioSection from '@/components/sections/AboutStudioSection.astro';
 import { createContentProvider } from '@/lib/content';
 
 const provider = createContentProvider();
@@ -14,19 +11,14 @@ const content = await provider.getMarketingContent('es');
   title={`${content.brand} | Nosotros`}
   description="Conoce la visión, estilo y proceso creativo de nuestro estudio fotográfico."
   brand={content.brand}
-  nav={content.nav}
   locale="es"
-  homeHref="/"
-  ctaLabel={content.hero.ctaLabel}
-  ctaHref={content.hero.ctaHref}
+  footer={content.footer}
   pageTone="inner"
 >
-  <PageHeader
-    eyebrow="Navegacion editorial"
-    title="Nosotros"
-    subtitle="Dirección creativa, producción visual y un workflow sólido para entregar fotografías listas para publicar."
+  <AboutStudioSection
+    about={content.about}
+    ui={content.aboutUi}
+    portfolioHref="/portfolio/"
+    contactHref="/contact/"
   />
-  <AboutSection about={content.about} />
-  <GallerySection gallery={content.gallery} />
-  <ContactSection contact={content.contact} nav={content.nav} />
 </SiteScaffold>

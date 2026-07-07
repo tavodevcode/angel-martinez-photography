@@ -1,0 +1,43 @@
+---
+import type { AboutContent } from '@/lib/content/types';
+
+interface Props {
+  about: AboutContent;
+  aboutHref: string;
+}
+
+const { about, aboutHref } = Astro.props;
+const [lineOne, ...rest] = about.title.split(' ');
+const lineTwo = rest.join(' ');
+---
+
+<section class="overflow-hidden" aria-label={about.sectionLabel}>
+  <div class="flex flex-col items-center py-[12vw]">
+    <div class="overflow-hidden">
+      <p data-rise class="whitespace-nowrap font-display text-[21.8vw] uppercase leading-[0.84] text-white">{lineOne}</p>
+    </div>
+    {lineTwo && (
+      <div class="overflow-hidden">
+        <p data-rise class="whitespace-nowrap font-display text-[24.3vw] uppercase leading-[0.84] text-white" style="--reveal-delay:110ms">{lineTwo}</p>
+      </div>
+    )}
+  </div>
+
+  <div class="flex flex-col gap-8 px-6 pb-8 pt-2 lg:grid lg:grid-cols-[300px_1fr_300px] lg:items-start lg:px-16">
+    <p data-reveal class="font-caption text-[11px] uppercase tracking-[0.24em] text-muted">{about.sectionLabel}</p>
+    <div data-reveal class="flex justify-center" style="--reveal-delay:100ms">
+      <p class="w-[440px] max-w-full text-center font-body text-[20px] font-medium leading-[1.7] text-white">
+        {about.paragraph}
+      </p>
+    </div>
+    <div data-reveal class="flex lg:justify-end" style="--reveal-delay:200ms">
+      <a
+        href={aboutHref}
+        data-astro-prefetch="viewport"
+        class="font-caption text-[11px] font-semibold uppercase tracking-[0.24em] text-white underline-offset-4 transition hover:underline"
+      >
+        {about.linkLabel}
+      </a>
+    </div>
+  </div>
+</section>

@@ -1,0 +1,92 @@
+---
+import { Picture } from 'astro:assets';
+import type { ImageMetadata } from 'astro';
+import type { GalleryItem, PortfolioItem } from '@/lib/content/types';
+
+interface Props {
+  gallery: GalleryItem[];
+  portfolio: PortfolioItem[];
+  label: string;
+  linkLabel: string;
+  linkHref: string;
+}
+
+const { gallery, portfolio, label, linkLabel, linkHref } = Astro.props;
+
+interface Piece {
+  image: ImageMetadata;
+  alt: string;
+  heightClass: string;
+  caption?: string;
+  meta?: string;
+}
+
+const [g1, g2, g3, g4, g5] = gallery;
+const [p1, p2, p3, p4] = portfolio;
+
+// Metadatos decorativos de cámara, como en el diseño (no se traducen).
+const columns: Piece[][] = [
+  [
+    { image: g1.image, alt: g1.alt, heightClass: 'h-[290px]', meta: 'INT. 01 — 24MM · F/5.6 · ISO 100', caption: g1.title },
+    { image: g2.image, alt: g2.alt, heightClass: 'h-[380px]' },
+  ],
+  [
+    { image: g3.image, alt: g3.alt, heightClass: 'h-[420px]' },
+    { image: g4.image, alt: g4.alt, heightClass: 'h-[240px]', caption: g4.title },
+  ],
+  [
+    { image: g5.image, alt: g5.alt, heightClass: 'h-[400px]' },
+    { image: p1.image, alt: p1.title, heightClass: 'h-[290px]', meta: 'INT. 07 — 35MM · F/2.8 · ISO 640' },
+  ],
+  [
+    { image: p2.image, alt: p2.title, heightClass: 'h-[230px]', caption: p2.title },
+    { image: p3.image, alt: p3.title, heightClass: 'h-[320px]' },
+    { image: p4.image, alt: p4.title, heightClass: 'h-[180px]' },
+  ],
+];
+---
+
+<section class="px-6 pb-[190px] pt-[90px] lg:px-16" aria-label={label}>
+  <div data-reveal class="mb-7 flex flex-wrap items-center justify-between gap-4">
+    <p class="font-caption text-[11px] uppercase tracking-[0.24em] text-muted">{label}</p>
+    <a
+      href={linkHref}
+      data-astro-prefetch="viewport"
+      class="link-underline font-caption text-[11px] font-semibold uppercase tracking-[0.24em] text-white"
+    >
+      {linkLabel}
+    </a>
+  </div>
+
+  <div class="grid grid-cols-2 gap-6 lg:grid-cols-4">
+    {columns.map((column, colIndex) => (
+      <div class="flex flex-col gap-6">
+        {column.map((piece, rowIndex) => (
+          <figure data-reveal data-zoom class="flex flex-col gap-3" style={`--reveal-delay:${(colIndex * 2 + rowIndex) * 70}ms`}>
+            <div class={`relative overflow-hidden rounded-xl shadow-[0_12px_24px_rgba(0,0,0,0.7)] ${piece.heightClass}`}>
+              <Picture
+                src={piece.image}
+                alt={piece.alt}
+                widths={[360, 560, 760]}
+                sizes="(max-width: 1024px) 50vw, 25vw"
+                formats={['avif', 'webp']}
+                loading="lazy"
+                class="h-full w-full object-cover"
+              />
+              {piece.meta && (
+                <div class="absolute inset-x-0 bottom-0 flex items-center justify-between bg-black/65 px-4 py-2.5">
+                  <span class="font-meta text-[10px] tracking-[0.12em] text-white">{piece.meta}</span>
+                </div>
+              )}
+            </div>
+            {piece.caption && (
+              <figcaption class="font-caption text-[10px] uppercase tracking-[0.18em] text-muted">
+                {piece.caption}
+              </figcaption>
+            )}
+          </figure>
+        ))}
+      </div>
+    ))}
+  </div>
+</section>

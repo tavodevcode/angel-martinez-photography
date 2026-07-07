@@ -1,0 +1,116 @@
+---
+import { Picture } from 'astro:assets';
+import type { CollectionEntry } from 'astro:content';
+import type { Locale, ServicesUiContent } from '@/lib/content/types';
+import { withLocalePath } from '@/lib/i18n';
+
+interface Props {
+  services: CollectionEntry<'services'>[];
+  locale: Locale;
+  ui: ServicesUiContent;
+  email: string;
+  phone: string;
+}
+
+const { services, locale, ui, email, phone } = Astro.props;
+const hrefFor = (id: string) => withLocalePath(locale, `/services/${id}/`);
+---
+
+<section aria-label={ui.title}>
+  <!-- Cabecera monumental -->
+  <header class="flex flex-col gap-12 pt-36 lg:gap-16 lg:pt-40">
+    <div class="flex items-start justify-between px-6 lg:px-12">
+      <p class="font-caption text-[11px] uppercase tracking-[0.24em] text-muted">{ui.headerLabel}</p>
+      <p class="font-caption text-[11px] uppercase tracking-[0.24em] text-muted">{ui.indexLabel}</p>
+    </div>
+    <div class="flex justify-center overflow-hidden">
+      <h1 data-rise class="vt-page-title whitespace-nowrap text-center font-display text-[32.3vw] uppercase leading-[0.84] text-white">
+        {ui.title}
+      </h1>
+    </div>
+    <div data-reveal class="flex justify-center px-6" style="--reveal-delay:120ms">
+      <p class="w-[520px] max-w-full text-center font-body text-[17px] font-medium leading-[1.65] text-muted">
+        {ui.intro}
+      </p>
+    </div>
+  </header>
+
+  <!-- Lista de servicios -->
+  <ul class="flex flex-col gap-24 px-6 pt-24 lg:gap-[140px] lg:px-20 lg:pt-[150px]">
+    {services.map((service, index) => (
+      <li data-reveal>
+        <a
+          href={hrefFor(service.id)}
+          data-astro-prefetch="viewport"
+          class:list={[
+            'group flex flex-col gap-10 lg:items-center lg:gap-24',
+            index % 2 === 1 ? 'lg:flex-row-reverse' : 'lg:flex-row',
+          ]}
+        >
+          <div class="flex flex-1 flex-col items-start gap-6 lg:gap-7">
+            <p class="font-caption text-[13px] tracking-[0.23em] text-muted">
+              ({String(index + 1).padStart(2, '0')})
+            </p>
+            <h2 class="font-display text-[clamp(38px,5vw,72px)] uppercase leading-[0.94] text-white transition group-hover:text-muted">
+              {service.data.title[locale]}
+            </h2>
+            <p class="max-w-[440px] font-body text-[15px] leading-[1.6] text-muted">
+              {service.data.description[locale]}
+            </p>
+          </div>
+          <div
+            transition:name={`service-${service.id}`}
+            class="relative w-full overflow-hidden rounded-[12px] shadow-[0_12px_24px_rgba(0,0,0,0.7)] lg:w-[560px] lg:shrink-0"
+          >
+            <Picture
+              src={service.data.image}
+              alt={service.data.imageAlt[locale]}
+              widths={[560, 840, 1120]}
+              sizes="(max-width: 1024px) 100vw, 560px"
+              formats={['avif', 'webp']}
+              class="h-[300px] w-full object-cover transition duration-500 group-hover:scale-[1.02] sm:h-[420px]"
+            />
+            <div class="absolute inset-x-0 bottom-0 flex items-center justify-between bg-black/65 px-4 py-2.5">
+              <p class="font-meta text-[10px] tracking-[0.12em] text-white">{ui.serviceMeta[index] ?? ''}</p>
+            </div>
+          </div>
+        </a>
+      </li>
+    ))}
+  </ul>
+
+  <!-- Franja de proceso -->
+  <div class="flex flex-col gap-14 px-6 pt-32 lg:gap-[72px] lg:px-20 lg:pt-[190px]">
+    <div class="flex items-end justify-between">
+      <p class="font-caption text-[12px] uppercase tracking-[0.25em] text-muted">{ui.processLabel}</p>
+      <p class="font-caption text-[12px] uppercase tracking-[0.25em] text-muted">{ui.processIndexLabel}</p>
+    </div>
+    <div class="grid gap-10 sm:grid-cols-2 lg:grid-cols-4 lg:gap-14">
+      {ui.processSteps.map((step, index) => (
+        <div data-reveal class="flex flex-col gap-4" style={`--reveal-delay:${index * 90}ms`}>
+          <p class="font-caption text-[12px] font-semibold uppercase tracking-[0.25em] text-white">{step.title}</p>
+          <p class="font-body text-[15px] leading-[1.6] text-muted">{step.description}</p>
+        </div>
+      ))}
+    </div>
+  </div>
+
+  <!-- Cierre agenda -->
+  <div class="flex flex-col gap-12 pb-12 pt-36 lg:gap-[72px] lg:pt-[210px]">
+    <p class="px-6 text-center font-caption text-[11px] uppercase tracking-[0.26em] text-muted">
+      {ui.closingEyebrow}
+    </p>
+    <div class="flex justify-center overflow-hidden">
+      <a href={`mailto:${email}`} aria-label={ui.closingTitle}>
+        <p data-rise class="whitespace-nowrap text-center font-display text-[27.8vw] uppercase leading-[0.84] text-white transition hover:text-muted">
+          {ui.closingTitle}
+        </p>
+      </a>
+    </div>
+    <div class="flex flex-wrap items-center justify-center gap-x-5 gap-y-2 px-6">
+      <a href={`mailto:${email}`} class="font-body text-[17px] text-white transition hover:text-muted">{email}</a>
+      <span class="font-body text-[17px] text-muted" aria-hidden="true">·</span>
+      <p class="font-body text-[17px] text-white">{phone}</p>
+    </div>
+  </div>
+</section>
