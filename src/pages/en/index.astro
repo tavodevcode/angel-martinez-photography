@@ -1,12 +1,12 @@
 ---
 import SiteScaffold from '@/components/layout/SiteScaffold.astro';
-import AboutSection from '@/components/sections/AboutSection.astro';
-import BrandStripSection from '@/components/sections/BrandStripSection.astro';
+import ArchiveGridSection from '@/components/sections/ArchiveGridSection.astro';
 import ContactSection from '@/components/sections/ContactSection.astro';
-import GallerySection from '@/components/sections/GallerySection.astro';
 import HeroSection from '@/components/sections/HeroSection.astro';
-import PortfolioSection from '@/components/sections/PortfolioSection.astro';
+import MonumentalStatement from '@/components/sections/MonumentalStatement.astro';
+import SelectedWorkSection from '@/components/sections/SelectedWorkSection.astro';
 import ServicesSection from '@/components/sections/ServicesSection.astro';
+import TestimonialSection from '@/components/sections/TestimonialSection.astro';
 import { createContentProvider } from '@/lib/content';
 
 const provider = createContentProvider();
@@ -15,20 +15,32 @@ const content = await provider.getMarketingContent('en');
 
 <SiteScaffold
   title={`${content.brand} | Home`}
-  description="Editorial and commercial photography with optimized performance and seamless transitions."
+  description="Editorial photography with optimized web performance and cinematic navigation."
   brand={content.brand}
-  nav={content.nav}
   locale="en"
-  homeHref="/en/"
-  ctaLabel={content.hero.ctaLabel}
-  ctaHref={content.hero.ctaHref}
+  footer={content.footer}
   pageTone="home"
 >
   <HeroSection hero={content.hero} />
-  <AboutSection about={content.about} />
-  <GallerySection gallery={content.gallery} />
-  <BrandStripSection brands={content.brands} />
-  <ServicesSection services={content.services} />
-  <PortfolioSection portfolio={content.portfolio} />
-  <ContactSection contact={content.contact} nav={content.nav} />
+  <MonumentalStatement about={content.about} aboutHref="/en/about/" />
+  <ArchiveGridSection
+    gallery={content.gallery}
+    portfolio={content.portfolio}
+    label={content.home.archiveLabel}
+    linkLabel={content.home.archiveLinkLabel}
+    linkHref="/en/portfolio/"
+  />
+  <ServicesSection
+    services={content.services}
+    sectionLabel={content.home.servicesLabel}
+    indexLabel={content.home.servicesIndexLabel}
+  />
+  <SelectedWorkSection
+    portfolio={content.portfolio}
+    label={content.home.workLabel}
+    title={content.home.workTitle}
+    portfolioHref="/en/portfolio/"
+  />
+  <TestimonialSection testimonial={content.testimonials[1]} />
+  <ContactSection contact={content.contact} />
 </SiteScaffold>

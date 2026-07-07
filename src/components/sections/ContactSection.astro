@@ -1,67 +1,36 @@
 ---
-import { Picture } from 'astro:assets';
-import ctaImage from '@/assets/images/cta-image.jpg';
-import { getLocaleFromPath } from '@/lib/i18n';
-import type { ContactContent, NavItem } from '@/lib/content/types';
+import type { ContactContent } from '@/lib/content/types';
 
 interface Props {
   contact: ContactContent;
-  nav?: NavItem[];
 }
 
-const { contact, nav = [] } = Astro.props;
-const locale = getLocaleFromPath(Astro.url.pathname);
-const navLabel = locale === 'en' ? 'Navigation' : 'Navegacion';
-const readyCopy = locale === 'en' ? 'Ready to create something extraordinary?' : 'Listo para crear algo extraordinario?';
-const socialsLabel = locale === 'en' ? 'Socials' : 'Redes';
-const talkAlt = locale === 'en' ? "Let's talk" : 'Hablemos';
-
-const socials = [
-  { label: 'Instagram', href: 'https://instagram.com' },
-  { label: 'Behance', href: 'https://behance.net' },
-  { label: 'Facebook', href: 'https://facebook.com' },
-  { label: 'LinkedIn', href: 'https://linkedin.com' },
-];
+const { contact } = Astro.props;
 ---
 
-<section class="section-rule px-6 py-16 lg:px-10 lg:py-24">
-  <div class="mx-auto grid w-full max-w-[1440px] gap-10 lg:grid-cols-[220px_1fr_220px] lg:items-end">
-    <div>
-      <p class="mb-5 text-[10px] uppercase tracking-[0.2em] text-white/55">{navLabel}</p>
-      <nav class="space-y-2 text-sm text-white/65">
-        {nav.map((item) => (
-          <a href={item.href} class="block transition hover:text-white">{item.label}</a>
-        ))}
-      </nav>
-    </div>
+<section class="overflow-hidden pb-14 pt-20" aria-label={contact.title}>
+  <div class="flex justify-center overflow-hidden">
+    <a href={`mailto:${contact.email}`} aria-label={contact.talkAlt}>
+      <h2 data-rise class="whitespace-nowrap text-center font-display text-[26vw] uppercase leading-[0.85] text-white transition hover:text-muted">
+        {contact.title}
+      </h2>
+    </a>
+  </div>
 
-    <div class="text-center">
-      <p class="text-sm text-white/55">{readyCopy}</p>
-      <h2 class="mt-2 font-display text-6xl font-semibold text-white sm:text-7xl lg:text-8xl">{contact.title}</h2>
-
-      <a href={`mailto:${contact.email}`} class="group relative mt-7 inline-block overflow-hidden border border-white/20">
-        <Picture
-          src={ctaImage}
-          alt={talkAlt}
-          widths={[420, 760, 980]}
-          sizes="(max-width: 1024px) 70vw, 26vw"
-          formats={['avif', 'webp']}
-          loading="lazy"
-          class="h-auto w-[300px] object-cover transition duration-500 group-hover:scale-105"
-        />
-        <span class="absolute inset-0 grid place-items-center bg-black/45 text-sm text-white/95">
-          {contact.description}
-        </span>
+  <div class="flex flex-col gap-10 px-6 pt-[110px] sm:flex-row sm:justify-between lg:px-20">
+    <div data-reveal class="flex flex-col gap-3">
+      <p class="font-caption text-[11px] uppercase tracking-[0.28em] text-muted">{contact.emailLabel}</p>
+      <a href={`mailto:${contact.email}`} class="font-body text-[17px] text-white transition hover:text-muted">
+        {contact.email}
       </a>
     </div>
-
-    <div class="lg:text-right">
-      <p class="mb-5 text-[10px] uppercase tracking-[0.2em] text-white/55">{socialsLabel}</p>
-      <nav class="space-y-2 text-sm text-white/65">
-        {socials.map((item) => (
-          <a href={item.href} target="_blank" rel="noreferrer" class="block transition hover:text-white">{item.label}</a>
-        ))}
-      </nav>
+    <div data-reveal class="flex flex-col gap-3" style="--reveal-delay:100ms">
+      <p class="font-caption text-[11px] uppercase tracking-[0.28em] text-muted">{contact.phoneLabel}</p>
+      <p class="font-body text-[17px] text-white">{contact.phone}</p>
+    </div>
+    <div data-reveal class="flex flex-col gap-3" style="--reveal-delay:200ms">
+      <p class="font-caption text-[11px] uppercase tracking-[0.28em] text-muted">{contact.locationLabel}</p>
+      <p class="font-body text-[17px] text-white">{contact.location}</p>
     </div>
   </div>
 </section>

@@ -1,32 +1,27 @@
 ---
+import { getCollection } from 'astro:content';
 import SiteScaffold from '@/components/layout/SiteScaffold.astro';
-import BrandStripSection from '@/components/sections/BrandStripSection.astro';
-import ContactSection from '@/components/sections/ContactSection.astro';
-import PageHeader from '@/components/sections/PageHeader.astro';
-import PortfolioSection from '@/components/sections/PortfolioSection.astro';
+import PortfolioCollectionSection from '@/components/sections/PortfolioCollectionSection.astro';
 import { createContentProvider } from '@/lib/content';
 
 const provider = createContentProvider();
 const content = await provider.getMarketingContent('en');
+const albums = (await getCollection('albums')).sort((a, b) => a.data.order - b.data.order);
 ---
 
 <SiteScaffold
   title={`${content.brand} | Portfolio`}
-  description="Selected projects that showcase art direction, visual language, and production consistency."
+  description="Albums by event: weddings, editorial, and commercial work with monumental visual direction."
   brand={content.brand}
-  nav={content.nav}
   locale="en"
-  homeHref="/en/"
-  ctaLabel={content.hero.ctaLabel}
-  ctaHref={content.hero.ctaHref}
+  footer={content.footer}
   pageTone="inner"
 >
-  <PageHeader
-    eyebrow="Editorial navigation"
-    title="Portfolio"
-    subtitle="Selected work that reflects craft, visual consistency, and storytelling quality."
+  <PortfolioCollectionSection
+    albums={albums}
+    extras={content.portfolio}
+    ui={content.portfolioUi}
+    locale="en"
+    albumBase="/en/portfolio"
   />
-  <PortfolioSection portfolio={content.portfolio} />
-  <BrandStripSection brands={content.brands} />
-  <ContactSection contact={content.contact} nav={content.nav} />
 </SiteScaffold>

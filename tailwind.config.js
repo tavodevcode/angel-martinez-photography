@@ -4,12 +4,15 @@ export default {
   theme: {
     extend: {
       fontFamily: {
-        display: ['"Mona Sans"', 'system-ui', 'sans-serif'],
-        body: ['"Mona Sans"', 'system-ui', 'sans-serif'],
+        display: ['Anton', 'system-ui', 'sans-serif'],
+        body: ['"Geist Variable"', 'system-ui', 'sans-serif'],
+        caption: ['"Inter Variable"', 'system-ui', 'sans-serif'],
+        meta: ['"IBM Plex Mono"', 'ui-monospace', 'monospace'],
       },
       colors: {
-        ink: '#0a0a0a',
-        fog: '#f6f6f6',
+        ink: '#000000',
+        fog: '#ffffff',
+        muted: '#9c9c9a',
         accent: '#e2e2e2',
       },
       animation: {

@@ -1,0 +1,55 @@
+title:
+  es: Fotografia de bodas
+  en: Wedding Photography
+description:
+  es: Capturamos tu dia especial con narrativa visual elegante y atemporal.
+  en: Capturing your day with timeless elegance and emotional storytelling.
+image: ../../assets/images/service-wedding.jpg
+imageAlt:
+  es: Fotografia de boda
+  en: Wedding photography
+order: 1
+packages:
+  - name:
+      es: Esencial
+      en: Essential
+    price: $18,000 MXN
+    features:
+      es:
+        - 6 horas de cobertura
+        - 300 fotografias editadas
+        - Galeria digital privada
+      en:
+        - 6 hours of coverage
+        - 300 edited photographs
+        - Private digital gallery
+  - name:
+      es: Completo
+      en: Complete
+    price: $28,000 MXN
+    features:
+      es:
+        - 10 horas de cobertura
+        - 600 fotografias editadas
+        - Sesion pre-boda incluida
+        - Album impreso fine art
+      en:
+        - 10 hours of coverage
+        - 600 edited photographs
+        - Engagement session included
+        - Fine art printed album
+  - name:
+      es: Editorial
+      en: Editorial
+    price: $42,000 MXN
+    features:
+      es:
+        - Cobertura de dia completo
+        - Segundo fotografo
+        - Video highlights de 3 minutos
+        - Album impreso + caja de coleccion
+      en:
+        - Full day coverage
+        - Second photographer
+        - 3-minute highlight video
+        - Printed album + collector box

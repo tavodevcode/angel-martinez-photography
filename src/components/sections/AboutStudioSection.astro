@@ -1,0 +1,272 @@
+---
+import { Picture } from 'astro:assets';
+import type { AboutContent, AboutUiContent } from '@/lib/content/types';
+
+import historiaHero from '@/assets/images/about-historia-hero.jpg';
+import historiaImg from '@/assets/images/about-historia.jpg';
+import equipoImg from '@/assets/images/about-equipo.jpg';
+import principiosImg from '@/assets/images/about-principios.jpg';
+import metodoImg from '@/assets/images/about-metodo.jpg';
+import archivoImg from '@/assets/images/about-archivo.jpg';
+
+interface Props {
+  about: AboutContent;
+  ui: AboutUiContent;
+  portfolioHref: string;
+  contactHref: string;
+}
+
+const { about, ui, portfolioHref, contactHref } = Astro.props;
+const blockImages = [historiaImg, equipoImg, principiosImg];
+const amber = '#FF9800';
+---
+
+<section class="overflow-hidden pt-28 lg:pt-32" aria-label={ui.sectionLabel}>
+  <!-- Titular monumental EL ESTUDIO -->
+  <div class="flex justify-center overflow-hidden pb-[9.7vw] pt-[7.6vw]">
+    <h1 data-rise class="vt-page-title whitespace-nowrap text-center font-display text-[22.9vw] uppercase leading-[0.84] text-white">
+      {ui.title}
+    </h1>
+  </div>
+
+  <!-- Retícula editorial: etiqueta / manifiesto / enlace -->
+  <div class="flex flex-col gap-8 px-6 pb-24 lg:grid lg:grid-cols-[300px_1fr_300px] lg:items-start lg:px-16 lg:pb-[110px]">
+    <p data-reveal class="font-caption text-[11px] uppercase tracking-[0.24em] text-muted">{ui.sectionLabel}</p>
+    <div data-reveal class="flex justify-center" style="--reveal-delay:100ms">
+      <p class="w-[440px] max-w-full text-center font-body text-[20px] font-medium leading-[1.7] text-white">
+        {about.paragraph}
+      </p>
+    </div>
+    <div data-reveal class="flex lg:justify-end" style="--reveal-delay:200ms">
+      <a
+        href={portfolioHref}
+        data-astro-prefetch="viewport"
+        class="link-underline font-caption text-[11px] font-semibold uppercase tracking-[0.24em] text-white"
+      >
+        {ui.portfolioLinkLabel}
+      </a>
+    </div>
+  </div>
+
+  <!-- Historia — hero full-bleed con velo ámbar -->
+  <div class="relative flex min-h-[720px] flex-col items-center justify-center gap-6 overflow-hidden px-6 py-32 text-center lg:min-h-[760px]">
+    <Picture
+      src={historiaHero}
+      alt={ui.historia.imageAlt}
+      widths={[768, 1280, 1920]}
+      sizes="100vw"
+      formats={['avif', 'webp']}
+      loading="lazy"
+      class="anim-kenburns absolute inset-0 h-full w-full object-cover"
+    />
+    <div class="absolute inset-0 bg-[#120B05]/80" aria-hidden="true"></div>
+
+    <p data-reveal class="relative z-10 font-caption text-[11px] font-semibold uppercase tracking-[0.24em] text-muted">
+      {ui.historia.eyebrow}
+    </p>
+    <h2 data-reveal class="relative z-10 max-w-[840px] font-display text-[clamp(40px,5.7vw,82px)] uppercase leading-[0.9] text-white" style="--reveal-delay:80ms">
+      {ui.historia.titleLines.map((line, i) => (
+        <>{i > 0 && <br />}{line}</>
+      ))}
+    </h2>
+    <p data-reveal class="relative z-10 max-w-[650px] font-body text-[18px] font-medium leading-[1.62] text-white" style="--reveal-delay:160ms">
+      {ui.historia.body}
+    </p>
+    <a
+      href={contactHref}
+      data-astro-prefetch="viewport"
+      data-reveal
+      style="--reveal-delay:240ms"
+      class="group relative z-10 mt-2 inline-flex items-center gap-3 rounded-full bg-white px-6 py-3.5 transition hover:bg-accent"
+    >
+      <span class="font-caption text-[11px] font-bold uppercase tracking-[0.15em] text-black">{ui.historia.ctaLabel}</span>
+      <span class="text-black transition-transform duration-300 group-hover:translate-x-1" aria-hidden="true">&rarr;</span>
+    </a>
+  </div>
+
+  <!-- Bloques alternos: Historia (01), Equipo (02), Principios (03) -->
+  {ui.blocks.map((block, index) => {
+    const imageRight = index % 2 === 1;
+    const isPrinciples = index === 2;
+    return (
+      <div class="border-t border-white/15">
+        <div
+          class:list={[
+            'flex flex-col gap-12 px-6 py-24 lg:gap-24 lg:px-20 lg:py-[126px]',
+            imageRight ? 'lg:flex-row-reverse lg:items-center' : 'lg:flex-row lg:items-center',
+          ]}
+        >
+          <figure data-reveal data-zoom class="relative w-full shrink-0 overflow-hidden rounded-xl shadow-[0_12px_24px_rgba(0,0,0,0.7)] lg:w-[560px]">
+            <Picture
+              src={blockImages[index]}
+              alt={block.imageAlt}
+              widths={[560, 840, 1120]}
+              sizes="(max-width: 1024px) 100vw, 560px"
+              formats={['avif', 'webp']}
+              loading="lazy"
+              class={`w-full object-cover ${isPrinciples ? 'h-[440px] lg:h-[700px]' : 'h-[420px] lg:h-[640px]'}`}
+            />
+            <figcaption class="absolute bottom-4 left-4 inline-flex items-center gap-2 rounded-lg bg-black/60 px-3 py-2">
+              <span class="h-[7px] w-[7px] rounded-full" style={`background:${amber}`} aria-hidden="true"></span>
+              <span class="font-caption text-[10px] font-semibold uppercase tracking-[0.16em] text-white">{block.caption}</span>
+            </figcaption>
+          </figure>
+
+          <div data-reveal class="flex flex-1 flex-col items-start gap-7" style="--reveal-delay:100ms">
+            <div class="flex items-center gap-2.5">
+              <span class="h-[9px] w-[9px] rounded-full" style={`background:${amber}`} aria-hidden="true"></span>
+              <span class="font-caption text-[11px] font-semibold uppercase tracking-[0.24em] text-muted">{block.index}</span>
+            </div>
+            <h2 class="font-display text-[clamp(34px,4.6vw,66px)] uppercase leading-[0.95] text-white">{block.title}</h2>
+            <p class="max-w-[520px] font-body text-[18px] leading-[1.62] text-[#D7D1C8]">{block.body}</p>
+
+            {isPrinciples ? (
+              <ul class="w-full border-y border-white/15">
+                {ui.principles.map((item, i) => (
+                  <li class={`flex flex-col gap-1.5 py-4 sm:flex-row sm:items-center sm:gap-6 ${i > 0 ? 'border-t border-white/10' : ''}`}>
+                    <span class="font-caption text-[11px] font-bold uppercase tracking-[0.16em]" style={`color:${amber}`}>{item.num}</span>
+                    <span class="font-caption text-[12px] font-bold uppercase tracking-[0.14em] text-white sm:w-[190px] sm:shrink-0">{item.title}</span>
+                    <span class="flex-1 font-body text-[15px] leading-[1.5] text-muted">{item.text}</span>
+                  </li>
+                ))}
+              </ul>
+            ) : (
+              block.ctaLabel && (
+                <a
+                  href={block.index.includes('01') ? portfolioHref : contactHref}
+                  data-astro-prefetch="viewport"
+                  class="group inline-flex items-center gap-3 rounded-lg border border-white/25 px-[18px] py-3 transition hover:bg-white hover:text-black"
+                >
+                  <span class="font-caption text-[11px] font-bold uppercase tracking-[0.16em]">{block.ctaLabel}</span>
+                  <span class="transition-transform duration-300 group-hover:translate-x-1" aria-hidden="true">&rarr;</span>
+                </a>
+              )
+            )}
+          </div>
+        </div>
+      </div>
+    );
+  })}
+
+  <!-- Cierre editorial: LO QUE PERMANECE ES LA ATMÓSFERA -->
+  <div class="flex flex-col items-center gap-6 border-t border-white/15 px-6 py-28 text-center lg:py-[130px]">
+    <p data-reveal class="font-caption text-[11px] font-semibold uppercase tracking-[0.24em] text-muted">{ui.closingEditorial.eyebrow}</p>
+    <h2 data-reveal class="max-w-[980px] font-display text-[clamp(44px,6.7vw,96px)] uppercase leading-[0.9] text-white" style="--reveal-delay:80ms">
+      {ui.closingEditorial.titleLines.map((line, i) => (
+        <>{i > 0 && <br />}{line}</>
+      ))}
+    </h2>
+    <p data-reveal class="max-w-[680px] font-body text-[18px] leading-[1.62] text-[#D7D1C8]" style="--reveal-delay:160ms">
+      {ui.closingEditorial.body}
+    </p>
+    <a
+      href={contactHref}
+      data-astro-prefetch="viewport"
+      data-reveal
+      style="--reveal-delay:240ms"
+      class="group mt-2 inline-flex items-center gap-3 rounded-full bg-white px-7 py-4 transition hover:bg-accent"
+    >
+      <span class="font-caption text-[11px] font-bold uppercase tracking-[0.15em] text-black">{ui.closingEditorial.ctaLabel}</span>
+      <span class="text-black transition-transform duration-300 group-hover:translate-x-1" aria-hidden="true">&rarr;</span>
+    </a>
+  </div>
+
+  <!-- Método — texto + imagen -->
+  <div class="flex flex-col gap-14 border-t border-white/25 px-6 py-28 lg:flex-row lg:items-center lg:gap-24 lg:px-20 lg:py-[150px]">
+    <div data-reveal class="flex flex-1 flex-col items-start gap-7">
+      <p class="font-caption text-[11px] uppercase tracking-[0.26em] text-muted">{ui.method.label}</p>
+      <h2 class="font-display text-[clamp(44px,6.7vw,96px)] uppercase leading-[0.9] text-white">{ui.method.title}</h2>
+      <p class="max-w-[560px] font-body text-[18px] leading-[1.72] text-muted">{ui.method.intro}</p>
+      <ul class="w-full border border-white/25">
+        {ui.method.steps.map((step) => (
+          <li class="flex gap-7 border-b border-white/25 px-1 py-6 last:border-b-0">
+            <span class="font-caption text-[11px] tracking-[0.24em] text-muted">{step.num}</span>
+            <div class="flex flex-col gap-2">
+              <span class="font-body text-[22px] font-medium leading-[1.2] text-white">{step.title}</span>
+              <span class="font-body text-[15px] leading-[1.5] text-muted">{step.text}</span>
+            </div>
+          </li>
+        ))}
+      </ul>
+    </div>
+    <figure data-reveal data-zoom class="w-full shrink-0 overflow-hidden rounded-xl shadow-[0_12px_24px_rgba(0,0,0,0.7)] lg:w-[540px]" style="--reveal-delay:120ms">
+      <Picture
+        src={metodoImg}
+        alt={ui.method.imageAlt}
+        widths={[540, 820, 1080]}
+        sizes="(max-width: 1024px) 100vw, 540px"
+        formats={['avif', 'webp']}
+        loading="lazy"
+        class="h-[420px] w-full object-cover lg:h-[650px]"
+      />
+    </figure>
+  </div>
+
+  <!-- Interludio archivo -->
+  <div class="flex flex-col gap-5 px-6 pb-28 lg:px-20">
+    <figure data-reveal data-zoom class="w-full overflow-hidden rounded-xl shadow-[0_12px_24px_rgba(0,0,0,0.7)]">
+      <Picture
+        src={archivoImg}
+        alt={ui.archive.imageAlt}
+        widths={[768, 1280, 1920]}
+        sizes="100vw"
+        formats={['avif', 'webp']}
+        loading="lazy"
+        class="h-[360px] w-full object-cover lg:h-[560px]"
+      />
+    </figure>
+    <div data-reveal class="flex flex-wrap items-center justify-between gap-3">
+      <p class="font-caption text-[10px] uppercase tracking-[0.23em] text-muted">{ui.archive.label}</p>
+      <p class="font-caption text-[10px] uppercase tracking-[0.23em] text-muted">{ui.archive.code}</p>
+    </div>
+  </div>
+
+  <!-- Prueba — intro, estadísticas y cita -->
+  <div class="flex flex-col gap-14 px-6 pb-32 lg:px-20">
+    <div data-reveal class="flex flex-col gap-8 lg:flex-row lg:items-end lg:gap-24">
+      <p class="font-caption text-[11px] uppercase tracking-[0.26em] text-muted lg:shrink-0">{ui.proof.label}</p>
+      <p class="max-w-[720px] font-body text-[19px] font-medium leading-[1.62] text-white">{ui.proof.intro}</p>
+    </div>
+
+    <div class="grid gap-4 sm:grid-cols-3">
+      {ui.proof.stats.map((stat, i) => (
+        <div data-reveal class="flex flex-col gap-4 rounded-[10px] border border-white/25 px-7 py-8" style={`--reveal-delay:${i * 90}ms`}>
+          <p class="font-display text-[clamp(52px,5.7vw,82px)] leading-[0.9] text-white">{stat.value}</p>
+          <p class="font-body text-[16px] leading-[1.45] text-muted">{stat.label}</p>
+        </div>
+      ))}
+    </div>
+
+    <div data-reveal class="flex flex-col items-center gap-5 pt-16 text-center">
+      <blockquote class="max-w-[820px] font-body text-[clamp(22px,2.1vw,30px)] font-medium leading-[1.46] text-white">
+        “{ui.proof.quote}”
+      </blockquote>
+      <p class="font-caption text-[10px] uppercase tracking-[0.24em] text-muted">{ui.proof.quoteAuthor}</p>
+    </div>
+  </div>
+
+  <!-- Cierre — HAGAMOS VISIBLE LA HISTORIA -->
+  <div class="flex flex-col items-center gap-7 border-t border-white/25 px-6 py-32 text-center lg:py-[150px]">
+    <p data-reveal class="font-caption text-[11px] uppercase tracking-[0.26em] text-muted">{ui.closing.eyebrow}</p>
+    <div class="flex w-full justify-center overflow-hidden">
+      <h2 data-rise class="max-w-[1100px] font-display text-[clamp(52px,9.2vw,132px)] uppercase leading-[0.9] text-white">{ui.closing.title}</h2>
+    </div>
+    <p data-reveal class="max-w-[620px] font-body text-[18px] leading-[1.65] text-muted" style="--reveal-delay:120ms">{ui.closing.body}</p>
+    <div data-reveal class="flex flex-wrap items-center justify-center gap-7 pt-2" style="--reveal-delay:200ms">
+      <a
+        href={contactHref}
+        data-astro-prefetch="viewport"
+        class="inline-flex items-center rounded-full bg-white px-7 py-4 font-caption text-[11px] font-semibold uppercase tracking-[0.22em] text-black transition hover:bg-accent"
+      >
+        {ui.closing.ctaPrimary}
+      </a>
+      <a
+        href={portfolioHref}
+        data-astro-prefetch="viewport"
+        class="link-underline font-caption text-[11px] font-semibold uppercase tracking-[0.22em] text-white"
+      >
+        {ui.closing.portfolioLink}
+      </a>
+    </div>
+  </div>
+</section>

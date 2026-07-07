@@ -1,0 +1,19 @@
+---
+import type { TestimonialItem } from '@/lib/content/types';
+
+interface Props {
+  testimonial: TestimonialItem;
+}
+
+const { testimonial } = Astro.props;
+---
+
+<section class="flex flex-col items-center gap-11 px-6 py-[200px] lg:px-20" aria-label={testimonial.author}>
+  <blockquote data-reveal class="max-w-[820px] text-center font-body text-[clamp(22px,2.1vw,30px)] font-medium leading-[1.4] text-white">
+    “{testimonial.quote}”
+  </blockquote>
+  <div data-reveal class="flex flex-col items-center gap-2" style="--reveal-delay:140ms">
+    <p class="font-caption text-[12px] uppercase tracking-[0.28em] text-white">{testimonial.author}</p>
+    <p class="font-caption text-[12px] uppercase tracking-[0.28em] text-muted">{testimonial.role}</p>
+  </div>
+</section>

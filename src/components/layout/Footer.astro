@@ -1,21 +1,35 @@
 ---
-import type { Locale } from '@/lib/content/types';
+import { NAV_DEFINITIONS } from '@/lib/content/nav';
+import { withLocalePath } from '@/lib/i18n';
+import type { FooterContent, Locale } from '@/lib/content/types';
 
 interface Props {
   brand: string;
   locale: Locale;
-  ctaHref: string;
+  footer: FooterContent;
 }
 
 const year = new Date().getFullYear();
-const { brand, locale, ctaHref } = Astro.props;
-const rightsCopy = locale === 'en' ? 'All rights reserved.' : 'Todos los derechos reservados.';
-const privacyCopy = locale === 'en' ? 'Privacy Policy' : 'Aviso de privacidad';
+const { brand, locale, footer } = Astro.props;
+const links = NAV_DEFINITIONS.map((item) => ({
+  label: item.label[locale],
+  href: withLocalePath(locale, item.path),
+}));
 ---
 
-<footer class="section-rule px-6 py-5 lg:px-10">
-  <div class="mx-auto flex w-full max-w-[1440px] items-center justify-between gap-4 text-xs text-white/45">
-    <p>© {year} {brand}. {rightsCopy}</p>
-    <a href={ctaHref} class="transition hover:text-white/70">{privacyCopy}</a>
+<footer class="px-6 pb-14 pt-8 lg:px-20">
+  <div class="flex flex-col justify-between gap-6 md:flex-row md:items-center">
+    <p class="font-caption text-[12px] text-muted">© {year} {brand}. {footer.rights}</p>
+    <nav class="flex flex-wrap gap-x-8 gap-y-3">
+      {links.map((item) => (
+        <a
+          href={item.href}
+          data-astro-prefetch="viewport"
+          class="font-caption text-[12px] uppercase tracking-[0.16em] text-white transition hover:text-muted"
+        >
+          {item.label}
+        </a>
+      ))}
+    </nav>
   </div>
 </footer>

@@ -1,33 +1,16 @@
 import { useEffect, useMemo, useState, type MouseEvent } from 'react';
 
-import type { Locale } from '@/lib/content/types';
+import { NAV_DEFINITIONS, NAV_UI } from '@/lib/content/nav';
+import { getLocaleFromPath, withLocalePath } from '@/lib/i18n';
 
-interface LinkItem {
-  label: string;
-  href: string;
-}
-
+// El nav es transition:persist, así que sobrevive a navegaciones entre locales;
+// por eso deriva locale y labels del pathname en vez de recibirlos por props.
+// initialPath es el pathname de la página que lo renderiza en servidor: evita
+// hydration mismatch y deja aria-current correcto en el HTML estático.
 interface Props {
   brand: string;
-  links: LinkItem[];
-  locale: Locale;
-  homeHref: string;
-  ctaLabel: string;
-  ctaHref: string;
+  initialPath: string;
 }
-
-interface NavDefinition {
-  path: string;
-  label: Record<Locale, string>;
-}
-
-const NAV_DEFINITIONS: NavDefinition[] = [
-  { path: '/', label: { es: 'Inicio', en: 'Home' } },
-  { path: '/about/', label: { es: 'Nosotros', en: 'About' } },
-  { path: '/services/', label: { es: 'Servicios', en: 'Services' } },
-  { path: '/portfolio/', label: { es: 'Portafolio', en: 'Portfolio' } },
-  { path: '/contact/', label: { es: 'Contacto', en: 'Contact' } },
-];
 
 function normalizePath(path: string): string {
   if (!path) return '/';
@@ -36,7 +19,7 @@ function normalizePath(path: string): string {
 }
 
 function getPathnameFromHref(href: string): string {
-  if (typeof window === 'undefined') return href;
+  if (typeof window === 'undefined') return normalizePath(href);
   try {
     return normalizePath(new URL(href, window.location.origin).pathname);
   } catch {
@@ -44,31 +27,14 @@ function getPathnameFromHref(href: string): string {
   }
 }
 
-function getLocaleFromPath(path: string): Locale {
-  return path === '/en' || path.startsWith('/en/') ? 'en' : 'es';
-}
-
-function withLocalePath(locale: Locale, path: string): string {
-  if (locale === 'en') {
-    return path === '/' ? '/en/' : `/en${path}`;
-  }
-  return path;
-}
-
-export default function FloatingNav({ brand, homeHref }: Props) {
+export default function FloatingNav({ brand, initialPath }: Props) {
   const [scrolled, setScrolled] = useState(false);
   const [open, setOpen] = useState(false);
-  const [pathname, setPathname] = useState(() => {
-    if (typeof window === 'undefined') return normalizePath(homeHref);
-    return normalizePath(window.location.pathname);
-  });
+  const [pathname, setPathname] = useState(() => normalizePath(initialPath));
   const currentLocale = useMemo(() => getLocaleFromPath(pathname), [pathname]);
   const languageHref = useMemo(() => (currentLocale === 'en' ? '/' : '/en/'), [currentLocale]);
   const languageLabel = currentLocale === 'en' ? 'ES' : 'EN';
-  const menuLabel = 'Menu';
-  const menuAriaLabel = currentLocale === 'en' ? 'Open menu' : 'Abrir menu';
-  const localizedCtaLabel = currentLocale === 'en' ? 'Book a Session' : 'Agendar sesion';
-  const localizedCtaHref = withLocalePath(currentLocale, '/contact/');
+  const { menuLabel, menuAriaLabel } = NAV_UI[currentLocale];
   const localizedHomeHref = withLocalePath(currentLocale, '/');
   const localizedLinks = useMemo(
     () =>
@@ -80,9 +46,19 @@ export default function FloatingNav({ brand, homeHref }: Props) {
   );
 
   useEffect(() => {
-    const onScroll = () => setScrolled(window.scrollY > 24);
+    let ticking = false;
+    const updateScrolled = () => {
+      const isScrolled = window.scrollY > 24;
+      setScrolled((prev) => (prev === isScrolled ? prev : isScrolled));
+      ticking = false;
+    };
+    const onScroll = () => {
+      if (ticking) return;
+      ticking = true;
+      window.requestAnimationFrame(updateScrolled);
+    };
     const onPath = () => setPathname(normalizePath(window.location.pathname));
-    onScroll();
+    updateScrolled();
     onPath();
     window.addEventListener('scroll', onScroll, { passive: true });
     document.addEventListener('astro:after-swap', onPath as EventListener);
@@ -126,74 +102,60 @@ export default function FloatingNav({ brand, homeHref }: Props) {
 
   return (
     <header
-      className={`fixed inset-x-0 top-0 z-50 border-b transition-[background-color,border-color,backdrop-filter,box-shadow] duration-300 ${
-        scrolled
-          ? 'border-white/15 bg-black/82 shadow-[0_8px_24px_rgba(0,0,0,0.28)] backdrop-blur-xl'
-          : 'border-white/10 bg-black/52 backdrop-blur-lg'
+      className={`nav-glass fixed inset-x-0 top-0 z-50 border-b transition-[background-color,border-color] duration-300 ${
+        scrolled ? 'border-white/12 bg-black/85 backdrop-blur-xl' : 'border-transparent bg-black/40 backdrop-blur-md'
       }`}
     >
-      <div className="mx-auto grid w-full max-w-[1440px] grid-cols-[1fr_auto_1fr] items-center px-4 py-4 lg:px-10">
+      <div className="flex w-full items-center justify-between px-6 py-5 lg:px-12 lg:py-[26px]">
         <a
           href={localizedHomeHref}
           data-astro-prefetch="viewport"
           onClick={(event) => handleLinkClick(event, localizedHomeHref)}
-          className="flex items-center gap-4"
+          className="font-caption text-[12px] font-semibold uppercase tracking-[0.2em] text-white"
         >
-          <span className="h-7 w-7 rounded-full border border-white/80" />
-          <span className="h-7 w-7 rounded-full bg-white/90" />
-          <span className="hidden text-[10px] uppercase tracking-[0.2em] text-white/45 xl:inline">{brand}</span>
+          {brand}
         </a>
 
-        <nav className="hidden items-center justify-center gap-7 md:flex">
-          {localizedLinks.map((link) => (
-            <a
-              key={link.href}
-              href={link.href}
-              data-astro-prefetch="viewport"
-              onClick={(event) => handleLinkClick(event, link.href)}
-              aria-current={isActive(link.href) ? 'page' : undefined}
-              className={`text-[11px] uppercase tracking-[0.18em] transition ${
-                isActive(link.href) ? 'text-white' : 'text-white/75 hover:text-white'
-              }`}
-            >
-              {link.label}
-            </a>
-          ))}
-        </nav>
-
-        <div className="flex items-center justify-end gap-4">
-          <a
-            href={localizedCtaHref}
-            data-astro-prefetch="viewport"
-            onClick={(event) => handleLinkClick(event, localizedCtaHref)}
-            className="hidden text-[11px] uppercase tracking-[0.16em] text-white/85 underline underline-offset-4 transition hover:text-white md:inline-flex"
-          >
-            {localizedCtaLabel}
-          </a>
+        <div className="flex items-center gap-9">
+          <nav className="hidden items-center gap-9 md:flex">
+            {localizedLinks.map((link) => (
+              <a
+                key={link.href}
+                href={link.href}
+                data-astro-prefetch="viewport"
+                onClick={(event) => handleLinkClick(event, link.href)}
+                aria-current={isActive(link.href) ? 'page' : undefined}
+                className={`link-underline font-caption text-[11px] uppercase tracking-[0.2em] transition-colors ${
+                  isActive(link.href) ? 'font-semibold text-white' : 'text-muted hover:text-white'
+                }`}
+              >
+                {link.label}
+              </a>
+            ))}
+          </nav>
           <a
             href={languageHref}
             data-astro-prefetch="viewport"
             onClick={(event) => handleLinkClick(event, languageHref)}
-            className="hidden text-[11px] uppercase tracking-[0.16em] text-white/70 transition hover:text-white md:inline-flex"
+            className="hidden font-caption text-[11px] uppercase tracking-[0.2em] text-muted transition hover:text-white md:inline-flex"
           >
             {languageLabel}
           </a>
-          <span className="hidden h-7 w-7 rounded-full border border-white/80 md:inline-block" />
           <button
             type="button"
             aria-label={menuAriaLabel}
             aria-expanded={open}
             onClick={() => setOpen((value) => !value)}
-            className="rounded-full border border-white/20 px-3 py-1 text-xs uppercase tracking-[0.12em] md:hidden"
+            className="font-caption text-[11px] uppercase tracking-[0.2em] text-white md:hidden"
           >
             {menuLabel}
           </button>
         </div>
       </div>
 
-      {open && (
-        <nav className="border-t border-white/10 bg-black/90 px-5 py-4 md:hidden">
-          <div className="flex flex-col gap-3">
+      <div className={`mobile-menu-panel md:hidden ${open ? 'is-open' : ''}`} aria-hidden={!open}>
+        <nav className="border-t border-white/10 bg-black/95 px-6 py-5">
+          <div className="flex flex-col gap-4">
             {localizedLinks.map((link) => (
               <a
                 key={link.href}
@@ -201,7 +163,10 @@ export default function FloatingNav({ brand, homeHref }: Props) {
                 data-astro-prefetch="viewport"
                 onClick={(event) => handleLinkClick(event, link.href, true)}
                 aria-current={isActive(link.href) ? 'page' : undefined}
-                className={`text-sm transition ${isActive(link.href) ? 'text-white' : 'text-white/80 hover:text-white'}`}
+                tabIndex={open ? undefined : -1}
+                className={`font-caption text-[12px] uppercase tracking-[0.2em] transition ${
+                  isActive(link.href) ? 'font-semibold text-white' : 'text-muted hover:text-white'
+                }`}
               >
                 {link.label}
               </a>
@@ -210,13 +175,14 @@ export default function FloatingNav({ brand, homeHref }: Props) {
               href={languageHref}
               data-astro-prefetch="viewport"
               onClick={(event) => handleLinkClick(event, languageHref, true)}
-              className="pt-2 text-xs uppercase tracking-[0.16em] text-white/60 transition hover:text-white"
+              tabIndex={open ? undefined : -1}
+              className="pt-1 font-caption text-[11px] uppercase tracking-[0.2em] text-muted transition hover:text-white"
             >
               {languageLabel}
             </a>
           </div>
         </nav>
-      )}
+      </div>
     </header>
   );
 }
