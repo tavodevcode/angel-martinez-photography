@@ -69,17 +69,16 @@ const heroVideo = hero.video;
   // Hero-video estilo Apple Music: clip corto, silenciado, en loop sobre la
   // imagen poster. Sigue el patrón del repo (JS vanilla + astro:page-load).
   //
-  // Política de rendimiento: no se descarga ni un byte de video en móvil,
-  // touch o con prefers-reduced-motion — ahí se queda la imagen poster. El
-  // <source> solo se inyecta cuando el dispositivo puede reproducir; si el
-  // archivo aún no existe, el video nunca dispara "playing" y el poster manda.
+  // Con el loop optimizado (<1 MB) el video se carga también en móvil; el único
+  // gate es prefers-reduced-motion, donde se respeta la preferencia y se queda
+  // la imagen poster. El <source> se inyecta tras pasar ese gate; si el archivo
+  // no existe o el navegador bloquea el autoplay (p. ej. Modo de bajo consumo
+  // en iOS), el video nunca dispara "playing" y el poster manda.
   function initHeroVideo() {
     const video = document.querySelector<HTMLVideoElement>('[data-hero-video]');
     if (!video || video.dataset.heroReady) return;
 
-    const canPlay =
-      window.matchMedia('(hover: hover) and (pointer: fine)').matches &&
-      window.matchMedia('(prefers-reduced-motion: no-preference)').matches;
+    const canPlay = window.matchMedia('(prefers-reduced-motion: no-preference)').matches;
     if (!canPlay) return;
 
     video.dataset.heroReady = 'true';
