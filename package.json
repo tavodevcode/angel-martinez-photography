@@ -11,9 +11,12 @@
     "check": "astro check",
     "analyze:bundle": "node scripts/report-bundle.mjs",
     "analyze:images": "node scripts/check-image-budget.mjs",
+    "optimize:images": "node scripts/optimize-images.mjs",
+    "optimize:video": "node scripts/optimize-video.mjs",
     "perf:report": "npm run build && npm run analyze:bundle && npm run analyze:images"
   },
   "dependencies": {
+    "@astrojs/sitemap": "^3.7.3",
     "@astrojs/tailwind": "^6.0.0",
     "@fontsource-variable/geist": "^5.2.9",
     "@fontsource/anton": "^5.2.7",
