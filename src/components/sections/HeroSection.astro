@@ -7,9 +7,12 @@ interface Props {
 }
 
 const { hero } = Astro.props;
+const heroVideo = hero.video;
 ---
 
 <section class="relative flex h-[min(800px,92svh)] flex-col justify-between overflow-hidden" aria-label={hero.eyebrow}>
+  {/* Poster/fallback: imagen responsive optimizada (LCP). Siempre presente; el
+      video se monta encima solo cuando el dispositivo puede reproducirlo. */}
   <Picture
     src={hero.image}
     alt={hero.imageAlt}
@@ -20,6 +23,22 @@ const { hero } = Astro.props;
     fetchpriority="high"
     class="anim-kenburns absolute inset-0 h-full w-full object-cover"
   />
+  {
+    heroVideo && (
+      <video
+        data-hero-video
+        data-src-mp4={heroVideo.mp4}
+        data-src-webm={heroVideo.webm}
+        class="absolute inset-0 h-full w-full object-cover opacity-0 transition-opacity duration-700 ease-out motion-reduce:transition-none"
+        muted
+        loop
+        playsinline
+        preload="none"
+        aria-hidden="true"
+        tabindex="-1"
+      />
+    )
+  }
   <div class="absolute inset-0 bg-black/30" aria-hidden="true"></div>
 
   <div class="relative z-10 flex items-start justify-between gap-6 px-6 pt-28 lg:px-12 lg:pt-32">
@@ -39,3 +58,51 @@ const { hero } = Astro.props;
     </h1>
   </div>
 </section>
+
+<script>
+  // Hero-video estilo Apple Music: clip corto, silenciado, en loop sobre la
+  // imagen poster. Sigue el patrón del repo (JS vanilla + astro:page-load).
+  //
+  // Política de rendimiento: no se descarga ni un byte de video en móvil,
+  // touch o con prefers-reduced-motion — ahí se queda la imagen poster. El
+  // <source> solo se inyecta cuando el dispositivo puede reproducir; si el
+  // archivo aún no existe, el video nunca dispara "playing" y el poster manda.
+  function initHeroVideo() {
+    const video = document.querySelector<HTMLVideoElement>('[data-hero-video]');
+    if (!video || video.dataset.heroReady) return;
+
+    const canPlay =
+      window.matchMedia('(hover: hover) and (pointer: fine)').matches &&
+      window.matchMedia('(prefers-reduced-motion: no-preference)').matches;
+    if (!canPlay) return;
+
+    video.dataset.heroReady = 'true';
+
+    const { srcWebm, srcMp4 } = video.dataset;
+    // WebM primero (mejor compresión), MP4 como respaldo universal.
+    if (srcWebm) {
+      const source = document.createElement('source');
+      source.src = srcWebm;
+      source.type = 'video/webm';
+      video.appendChild(source);
+    }
+    if (srcMp4) {
+      const source = document.createElement('source');
+      source.src = srcMp4;
+      source.type = 'video/mp4';
+      video.appendChild(source);
+    }
+
+    // Revelar solo cuando realmente esté reproduciendo (evita mostrar un frame
+    // negro o un video roto si el archivo falta).
+    video.addEventListener('playing', () => video.classList.remove('opacity-0'), { once: true });
+
+    video.muted = true; // requerido para autoplay; refuerza el atributo.
+    video.preload = 'auto';
+    video.load();
+    const playback = video.play();
+    if (playback && typeof playback.catch === 'function') playback.catch(() => {});
+  }
+
+  document.addEventListener('astro:page-load', initHeroVideo);
+</script>
