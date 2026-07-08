@@ -98,10 +98,22 @@ const heroVideo = hero.video;
     video.addEventListener('playing', () => video.classList.remove('opacity-0'), { once: true });
 
     video.muted = true; // requerido para autoplay; refuerza el atributo.
+    video.autoplay = true; // autoplay nativo: más fiable que un solo .play().
     video.preload = 'auto';
+
+    const tryPlay = () => {
+      const playback = video.play();
+      if (playback && typeof playback.catch === 'function') playback.catch(() => {});
+    };
+
     video.load();
-    const playback = video.play();
-    if (playback && typeof playback.catch === 'function') playback.catch(() => {});
+    tryPlay();
+
+    // Red de seguridad: si el navegador bloquea el autoplay inicial (pestaña sin
+    // foco, política del navegador), reintenta a la primera interacción del usuario.
+    ['pointerdown', 'keydown', 'scroll', 'touchstart'].forEach((evt) =>
+      window.addEventListener(evt, tryPlay, { once: true, passive: true }),
+    );
   }
 
   document.addEventListener('astro:page-load', initHeroVideo);

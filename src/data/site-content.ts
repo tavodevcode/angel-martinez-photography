@@ -38,11 +38,10 @@ export const marketingContentByLocale: Record<Locale, MarketingContent> = {
       imageAlt: 'Escena editorial nocturna',
       ctaLabel: 'Agendar sesion',
       ctaHref: '/contact/',
-      // Deja los clips en public/videos/ (hero.mp4 obligatorio, hero.webm opcional).
-      // Mientras no existan, el hero muestra la imagen poster sin romperse.
+      // Clip del hero en public/videos/. Mientras no exista, se muestra el poster.
+      // Para agregar la variante ligera, crea hero.webm y añade `webm: '/videos/hero.webm'`.
       video: {
         mp4: '/videos/hero.mp4',
-        webm: '/videos/hero.webm',
       },
     },
     about: {
@@ -329,7 +328,6 @@ export const marketingContentByLocale: Record<Locale, MarketingContent> = {
       // Mismo clip que la home en español (public/videos/).
       video: {
         mp4: '/videos/hero.mp4',
-        webm: '/videos/hero.webm',
       },
     },
     about: {
