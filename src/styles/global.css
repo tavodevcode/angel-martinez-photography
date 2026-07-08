@@ -39,6 +39,18 @@
   }
 }
 
+/* Los elementos con view-transition-name (los morphs de imagen card → hero) se
+   pintan en una top layer del navegador, por encima incluso del z-50 del header.
+   Para que el nav no quede tapado durante la transición se le da su propio grupo
+   con z-index máximo, así se mantiene siempre al frente mientras la imagen morfea. */
+[data-floating-nav] {
+  view-transition-name: site-header;
+}
+
+::view-transition-group(site-header) {
+  z-index: 2147483647;
+}
+
 html,
 body {
   margin: 0;
@@ -264,6 +276,7 @@ main {
      solo los morphs internos (imágenes de services/portfolio); el scope del
      propio <main> (animación de ventana) no se toca. */
   .vt-page-title,
+  [data-floating-nav],
   main [data-astro-transition-scope] {
     view-transition-name: none !important;
   }
