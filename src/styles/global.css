@@ -68,16 +68,22 @@ main {
   min-height: 100vh;
 }
 
+/* main sin fondo propio: el <body> aporta el negro. Así la línea decorativa,
+   que va detrás (z-[-1] en SiteScaffold), asoma por los huecos del contenido. */
 .soft-grid {
-  background-color: #000000;
+  background-color: transparent;
 }
 
 .section-rule {
   border-top: 1px solid rgba(255, 255, 255, 0.12);
 }
 
+/* Título monumental por página. Antes compartían un view-transition-name común
+   y el navegador los morfeaba entre páginas, pero morfear textos distintos
+   (p.ej. SERVICIOS ↔ FOTOGRAFIA DE BODAS) se veía como un solapamiento raro.
+   Ahora cada título entra/sale con el fundido de ventana, mucho más limpio. */
 .vt-page-title {
-  view-transition-name: page-title;
+  view-transition-name: none;
 }
 
 /* ---- Animaciones de scroll (IntersectionObserver añade .is-visible) ---- */
@@ -142,6 +148,34 @@ main {
   animation: ken-burns 9s cubic-bezier(0.16, 1, 0.3, 1) both;
 }
 
+/* --- Tratamiento cinematográfico del hero-video --- */
+
+/* Viñeta radial: foco al centro, esquinas oscuras (profundidad). */
+.hero-vignette {
+  background: radial-gradient(120% 78% at 50% 42%, transparent 34%, rgba(0, 0, 0, 0.55) 100%);
+}
+
+/* Grano de película: ruido SVG en tile, mezcla suave sobre el metraje. */
+.hero-grain {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.82' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  background-size: 160px 160px;
+  opacity: 0.14;
+  mix-blend-mode: soft-light;
+}
+
+/* Sombra sutil para separar el texto blanco del metraje de fondo. */
+.hero-legible {
+  text-shadow: 0 1px 22px rgba(0, 0, 0, 0.5);
+}
+
+/* Fundido inferior del video/poster: la imagen se disuelve hacia transparente
+   y revela el negro del fondo, para que el metraje no corte en seco contra el
+   wordmark y la sección siguiente. Se funde sin costura. */
+.hero-media {
+  -webkit-mask-image: linear-gradient(to bottom, #000 54%, transparent 93%);
+  mask-image: linear-gradient(to bottom, #000 54%, transparent 93%);
+}
+
 /* Zoom sutil al pasar el cursor sobre una foto (wrapper con [data-zoom] + overflow-hidden).
    Solo con puntero real: en touch el primer tap deja :hover pegado y la foto
    se queda zoomeada. */
@@ -171,6 +205,13 @@ main {
   border-color: rgba(255, 255, 255, 0.12);
   -webkit-backdrop-filter: blur(24px);
   backdrop-filter: blur(24px);
+}
+
+/* Durante una navegación se suprime la transición del nav: su cambio de estado
+   (scrolled ↔ normal) se snap-ea en vez de animar un fade de 0.3s que competía
+   con la view transition y se veía raro al aterrizar en el detalle. */
+.nav-glass.nav-no-transition {
+  transition: none;
 }
 
 /* Subrayado animado en enlaces de navegación. */

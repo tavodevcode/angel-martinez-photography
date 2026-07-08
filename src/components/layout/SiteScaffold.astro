@@ -30,7 +30,10 @@ const windowTransition = {
   <div transition:persist>
     <FloatingNav brand={brand} />
   </div>
-  <div transition:persist aria-hidden="true" class="pointer-events-none fixed inset-0 z-10">
+  {/* Línea vertical decorativa: va DETRÁS del contenido (z-[-1]) para que el
+      hero-video, las imágenes y las cards la tapen; solo asoma por los huecos
+      negros. El <body> aporta el negro y <main> es transparente (.soft-grid). */}
+  <div transition:persist aria-hidden="true" class="pointer-events-none fixed inset-0 z-[-1]">
     <div class="absolute inset-y-0 left-1/2 w-px -translate-x-1/2 bg-white/10" />
   </div>
   <main transition:animate={windowTransition} class="soft-grid relative">

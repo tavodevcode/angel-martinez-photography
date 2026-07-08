@@ -21,7 +21,8 @@ const heroVideo = hero.video;
     formats={['avif', 'webp']}
     loading="eager"
     fetchpriority="high"
-    class="anim-kenburns absolute inset-0 h-full w-full object-cover"
+    data-hero-poster
+    class="hero-media anim-kenburns absolute inset-0 h-full w-full object-cover transition-opacity duration-700 ease-out motion-reduce:transition-none"
   />
   {
     heroVideo && (
@@ -29,7 +30,7 @@ const heroVideo = hero.video;
         data-hero-video
         data-src-mp4={heroVideo.mp4}
         data-src-webm={heroVideo.webm}
-        class="absolute inset-0 h-full w-full object-cover opacity-0 transition-opacity duration-700 ease-out motion-reduce:transition-none"
+        class="hero-media absolute inset-0 h-full w-full object-cover opacity-0 transition-opacity duration-700 ease-out motion-reduce:transition-none"
         muted
         loop
         playsinline
@@ -39,21 +40,26 @@ const heroVideo = hero.video;
       />
     )
   }
-  <div class="absolute inset-0 bg-black/30" aria-hidden="true"></div>
+  {/* Tratamiento del video: scrim para la nav arriba, viñeta radial (profundidad)
+      y grano de película (textura). El fundido inferior lo hace la máscara de
+      .hero-media, que disuelve el video hacia el negro del fondo. */}
+  <div class="pointer-events-none absolute inset-0 bg-gradient-to-b from-black/65 via-black/10 to-transparent" aria-hidden="true"></div>
+  <div class="pointer-events-none absolute inset-0 hero-vignette" aria-hidden="true"></div>
+  <div class="pointer-events-none absolute inset-0 hero-grain" aria-hidden="true"></div>
 
   <div class="relative z-10 flex items-start justify-between gap-6 px-6 pt-28 lg:px-12 lg:pt-32">
-    <p data-reveal class="font-caption text-[11px] uppercase tracking-[0.24em] text-white">{hero.eyebrow}</p>
-    <p data-reveal class="hidden font-caption text-[11px] uppercase tracking-[0.24em] text-white sm:block" style="--reveal-delay:120ms">{hero.labelRight}</p>
+    <p data-reveal class="hero-legible font-caption text-[11px] uppercase tracking-[0.24em] text-white">{hero.eyebrow}</p>
+    <p data-reveal class="hero-legible hidden font-caption text-[11px] uppercase tracking-[0.24em] text-white sm:block" style="--reveal-delay:120ms">{hero.labelRight}</p>
   </div>
 
   <div class="relative z-10 flex justify-center px-6">
-    <p data-reveal class="w-[460px] max-w-full text-center font-body text-[17px] font-medium leading-[1.65] text-white" style="--reveal-delay:200ms">
+    <p data-reveal class="hero-legible w-[460px] max-w-full text-center font-body text-[17px] font-medium leading-[1.65] text-white" style="--reveal-delay:200ms">
       {hero.description}
     </p>
   </div>
 
   <div class="relative z-10 flex justify-center overflow-hidden">
-    <h1 data-rise class="whitespace-nowrap text-center font-display text-[16.6vw] uppercase leading-[0.84] text-white" style="--reveal-delay:120ms">
+    <h1 data-rise class="hero-legible whitespace-nowrap text-center font-display text-[16.6vw] uppercase leading-[0.84] text-white" style="--reveal-delay:120ms">
       {hero.title}
     </h1>
   </div>
@@ -93,9 +99,33 @@ const heroVideo = hero.video;
       video.appendChild(source);
     }
 
-    // Revelar solo cuando realmente esté reproduciendo (evita mostrar un frame
-    // negro o un video roto si el archivo falta).
-    video.addEventListener('playing', () => video.classList.remove('opacity-0'), { once: true });
+    // Mantener la imagen estática (poster) hasta que el video esté DESCARGADO lo
+    // suficiente para reproducirse sin cortes (readyState 4 = HAVE_ENOUGH_DATA).
+    // Recién ahí se muestra el video y se funde el poster: si se dejara visible
+    // por debajo, la máscara del video lo transparentaría y se vería como "foto
+    // fantasma". Se chequea readyState en vez de confiar solo en el evento
+    // canplaythrough, que puede emitirse antes de enganchar el listener si el
+    // archivo ya está en caché.
+    const poster = document.querySelector<HTMLElement>('[data-hero-poster]');
+    let revealed = false;
+    const revealVideo = () => {
+      if (revealed) return;
+      revealed = true;
+      video.classList.remove('opacity-0'); // muestra el video
+      poster?.classList.add('opacity-0'); // funde el poster para evitar el fantasma
+    };
+    // Se sondea readyState con requestAnimationFrame porque los eventos de media
+    // (canplaythrough) no son fiables: si el archivo ya está en caché pueden
+    // emitirse antes de enganchar el listener. readyState 4 = HAVE_ENOUGH_DATA
+    // (descargado lo suficiente para reproducir sin cortes). Con tope para no
+    // sondear indefinidamente: si nunca descarga, se queda el poster.
+    let frames = 0;
+    const waitUntilReady = () => {
+      if (revealed) return;
+      if (video.readyState >= 4) return revealVideo();
+      if ((frames += 1) > 1800) return; // ~30s visibles; luego se rinde y deja el poster
+      requestAnimationFrame(waitUntilReady);
+    };
 
     video.muted = true; // requerido para autoplay; refuerza el atributo.
     video.autoplay = true; // autoplay nativo: más fiable que un solo .play().
@@ -106,8 +136,10 @@ const heroVideo = hero.video;
       if (playback && typeof playback.catch === 'function') playback.catch(() => {});
     };
 
+    video.addEventListener('playing', revealVideo); // si el navegador lo reproduce, mostrarlo ya
     video.load();
     tryPlay();
+    requestAnimationFrame(waitUntilReady);
 
     // Red de seguridad: si el navegador bloquea el autoplay inicial (pestaña sin
     // foco, política del navegador), reintenta a la primera interacción del usuario.
