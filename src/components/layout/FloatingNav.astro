@@ -256,12 +256,25 @@ const inactiveClass = 'text-muted hover:text-white';
     { passive: true },
   );
 
-  // Durante el swap deja el nav opaco; al terminar cierra el menú y re-sincroniza.
-  document.addEventListener('astro:before-swap', () => applyScrolled(true));
+  // Durante el swap deja el nav opaco y SIN transición, para que su cambio de
+  // estado no anime un fade que compita con la view transition (se veía raro al
+  // aterrizar en el detalle). Al terminar re-sincroniza y reactiva la transición.
+  document.addEventListener('astro:before-swap', () => {
+    getHeader()?.classList.add('nav-no-transition');
+    applyScrolled(true);
+  });
   document.addEventListener('astro:after-swap', () => {
     setOpen(false);
     syncToPath();
     applyScrolled(window.scrollY > 24);
+  });
+  document.addEventListener('astro:page-load', () => {
+    // El scroll ya está estabilizado (top en navegación normal, restaurado al
+    // volver): fija el estado final —aún sin transición, así que se snap-ea— y
+    // reactiva las transiciones del nav para el scroll normal.
+    applyScrolled(window.scrollY > 24);
+    const header = getHeader();
+    window.setTimeout(() => header?.classList.remove('nav-no-transition'), 100);
   });
 
   applyScrolled(window.scrollY > 24);

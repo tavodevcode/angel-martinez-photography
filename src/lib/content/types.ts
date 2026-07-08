@@ -2,6 +2,16 @@ import type { ImageMetadata } from 'astro';
 
 export type Locale = 'es' | 'en';
 
+/** Clip corto en loop para el hero, estilo "artist spotlight" de Apple Music.
+    La imagen del hero sigue siendo el poster/fallback (LCP); el video solo se
+    carga en desktop con puntero fino y sin prefers-reduced-motion. */
+export interface HeroVideo {
+  /** Ruta pública al clip principal (H.264/MP4), ej. '/videos/hero.mp4'. */
+  mp4: string;
+  /** Ruta pública al clip alterno (VP9/AV1 WebM), opcional pero recomendado. */
+  webm?: string;
+}
+
 export interface HeroContent {
   eyebrow: string;
   labelRight: string;
@@ -11,6 +21,8 @@ export interface HeroContent {
   imageAlt: string;
   ctaLabel: string;
   ctaHref: string;
+  /** Si se define, el hero reproduce este clip en loop sobre la imagen poster. */
+  video?: HeroVideo;
 }
 
 /** Strings de UI propios de la home "Monumental Nocturno". */
