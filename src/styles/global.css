@@ -125,45 +125,17 @@ main {
   transform: none;
 }
 
-/* Tras navegar en móvil, el contenido above-fold se revela DURANTE el
-   cross-fade (BaseLayout lo dispara en astro:after-swap; la capa "new" de la
-   view transition es un render vivo, así que la animación se ve dentro del
-   fundido). Se usan ANIMACIONES y no las transiciones base: los cambios de
-   clase dentro del update de startViewTransition se coalescen en un solo
-   recálculo (render suprimido) y una transición no tendría estado inicial —
-   haría snap. Un keyframe no necesita antes/después: corre al reanudar el
-   render. Duraciones más cortas que las base para acompañar al fade (0.34s).
-   La clase persiste tras aterrizar (quitarla cancelaría animaciones en vuelo
-   y re-dispararía la transición base): los reveals por scroll en móvil usan
-   estos mismos keyframes en lugar de las transiciones base. */
-.vt-reveal-soft [data-reveal].is-visible {
-  animation: vt-reveal-in 0.55s cubic-bezier(0.22, 1, 0.36, 1) both;
-  animation-delay: var(--reveal-delay, 0ms);
-}
-
-.vt-reveal-soft [data-rise].is-visible {
-  animation: vt-rise-in 0.7s cubic-bezier(0.16, 1, 0.3, 1) both;
-  animation-delay: var(--reveal-delay, 0ms);
-}
-
-@keyframes vt-reveal-in {
-  from {
-    opacity: 0;
-    transform: translateY(24px);
-  }
-  to {
-    opacity: 1;
-    transform: none;
-  }
-}
-
-@keyframes vt-rise-in {
-  from {
-    transform: translateY(115%);
-  }
-  to {
-    transform: none;
-  }
+/* Tras navegar en móvil, el contenido above-fold se revela SIN animación por
+   elemento: se presenta ya compuesto en el snapshot de la view transition y el
+   movimiento lo aporta el cross-fade de página (vt-window-in, una sola capa).
+   Antes se animaba cada elemento "dentro" de la transición, pero eso dependía
+   de que el motor tratara la capa "new" como render vivo — Chrome sí, Safari
+   muestra un snapshot y se veía saltar/lento. Instantáneo es idéntico en ambos.
+   Las transiciones base vuelven tras aterrizar (BaseLayout quita la clase) para
+   que los reveals por scroll sí animen. */
+.vt-reveal-soft [data-reveal],
+.vt-reveal-soft [data-rise] {
+  transition: none !important;
 }
 
 /* Panel del menú móvil: overlay full-screen opaco (el fondo semitransparente
@@ -289,15 +261,19 @@ main {
     box-shadow: none !important;
   }
 
-  /* En móvil la view transition es un cross-fade puro: componer dos texturas
-     con opacidad es lo más barato para el GPU; transform/scale fuerzan más
-     trabajo de rasterizado a resolución 3x. */
+  /* En móvil el movimiento lo da el fundido de página, no morphs por-elemento.
+     El entrante desliza levemente hacia arriba: es UNA sola capa compuesta (el
+     snapshot de <main>), un translate barato para el GPU — distinto de escalar
+     snapshots por-elemento a 3x, que sí era caro. Da vida a la navegación sin
+     que se sienta plana. El saliente solo se desvanece. */
   @keyframes vt-window-in {
     from {
       opacity: 0;
+      transform: translateY(16px);
     }
     to {
       opacity: 1;
+      transform: none;
     }
   }
 
