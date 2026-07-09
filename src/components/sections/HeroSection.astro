@@ -73,14 +73,23 @@ const heroVideo = hero.video;
   // gate es prefers-reduced-motion, donde se respeta la preferencia y se queda
   // la imagen poster. El <source> se inyecta tras pasar ese gate; si el archivo
   // no existe o el navegador bloquea el autoplay (p. ej. Modo de bajo consumo
-  // en iOS), el video nunca dispara "playing" y el poster manda.
+  // en iOS), el video nunca pinta un cuadro y el poster manda.
   function initHeroVideo() {
-    const video = document.querySelector<HTMLVideoElement>('[data-hero-video]');
-    if (!video || video.dataset.heroReady) return;
+    const mounted = document.querySelector<HTMLVideoElement>('[data-hero-video]');
+    if (!mounted || mounted.dataset.heroReady) return;
 
     const canPlay = window.matchMedia('(prefers-reduced-motion: no-preference)').matches;
     if (!canPlay) return;
 
+    // Tras una navegación del ClientRouter este <video> no lo creó el parser
+    // del documento vivo: llega adoptado del documento inerte de DOMParser. En
+    // Safari/iOS un media element adoptado puede perder su capa de video —
+    // "reproduce" (currentTime avanza, readyState sube) pero compone negro.
+    // Recrearlo con cloneNode lo instancia en el documento vivo y estrena
+    // pipeline de decodificación. En la carga inicial es inocuo: todavía no
+    // tiene <source> ni listeners.
+    const video = mounted.cloneNode(true) as HTMLVideoElement;
+    mounted.replaceWith(video);
     video.dataset.heroReady = 'true';
 
     const { srcWebm, srcMp4 } = video.dataset;
@@ -98,33 +107,50 @@ const heroVideo = hero.video;
       video.appendChild(source);
     }
 
-    // El video solo TAPA al poster mientras pinta cuadros de verdad. La
-    // condición dura es currentTime>0: ni readyState ni !paused bastan — en iOS
-    // el video puede quedar "no pausado" pero congelado en el cuadro 0 (negro).
-    // Si el autoplay se bloquea (volver a la home con navegación suave) o el
-    // sistema lo pausa (Modo de bajo consumo, segundo plano), vuelve el poster:
-    // el hero NUNCA queda en negro. El poster oculto evita el "fantasma" que la
-    // máscara del video dejaría ver por debajo mientras reproduce.
+    // El video solo TAPA al poster mientras pinta cuadros de verdad. La señal
+    // dura es requestVideoFrameCallback: dispara únicamente cuando un cuadro
+    // se COMPUSO en pantalla. currentTime/readyState no bastan — en iOS el
+    // reloj puede avanzar con la capa de video muerta y el hero quedaba negro
+    // al volver a la home. Sin rVFC (iOS <15.4) se degrada a currentTime>0.
+    // Si el autoplay se bloquea o el sistema pausa el video (Modo de bajo
+    // consumo, segundo plano), vuelve el poster: el hero NUNCA queda en negro.
+    // El poster oculto evita el "fantasma" que la máscara del video dejaría
+    // ver por debajo mientras reproduce.
     const poster = document.querySelector<HTMLElement>('[data-hero-poster]');
+    const supportsVFC = 'requestVideoFrameCallback' in HTMLVideoElement.prototype;
+    let lastFrameAt = 0; // instante del último cuadro compuesto (vía rVFC)
     let videoShown = false;
     const syncLayers = () => {
+      // "Pinta" = hubo cuadro compuesto hace <1s. No es un flag pegajoso a
+      // propósito: si la capa muere a mitad de la vida de la página con el
+      // reloj corriendo, el siguiente timeupdate (~250ms) devuelve el poster.
+      const painting = !supportsVFC || performance.now() - lastFrameAt < 1000;
       const rendering =
-        !video.paused && !video.ended && video.currentTime > 0 && video.readyState >= 2;
+        painting && !video.paused && !video.ended && video.currentTime > 0 && video.readyState >= 2;
       if (rendering === videoShown) return;
       videoShown = rendering;
       video.classList.toggle('opacity-0', !rendering); // video visible solo si pinta
       poster?.classList.toggle('opacity-0', rendering); // el poster cede solo entonces
     };
-    // timeupdate confirma avance real (primer cuadro pintado); pause/ended/emptied
-    // devuelven el poster. Cubre el arranque y las pausas del sistema.
+    // timeupdate confirma avance del reloj; pause/ended/emptied devuelven el
+    // poster. Cubre el arranque y las pausas del sistema.
     ['timeupdate', 'playing', 'pause', 'ended', 'emptied'].forEach((evt) =>
       video.addEventListener(evt, syncLayers),
     );
+    if (supportsVFC) {
+      const onFrame = () => {
+        lastFrameAt = performance.now();
+        syncLayers();
+        video.requestVideoFrameCallback(onFrame); // el callback es de un solo uso: re-armar
+      };
+      video.requestVideoFrameCallback(onFrame);
+    }
     // Sondeo acotado para revelar al primer cuadro sin esperar a timeupdate
-    // (~250ms). Si nunca avanza, se rinde y el poster manda; timeupdate seguirá
-    // cubriendo un arranque tardío (tras interacción del usuario).
+    // (~250ms). Si nunca pinta, se rinde y el poster manda; timeupdate/rVFC
+    // siguen cubriendo un arranque tardío (tras interacción del usuario).
     let polls = 0;
     const pollUntilShown = () => {
+      if (!video.isConnected) return; // la página ya se fue: morir en silencio
       syncLayers();
       if (!videoShown && (polls += 1) < 600) requestAnimationFrame(pollUntilShown);
     };
@@ -154,17 +180,23 @@ const heroVideo = hero.video;
       if (!document.hidden) retryPlay();
     };
     const retryEvents = ['pointerdown', 'keydown', 'scroll', 'touchstart'] as const;
-    const cleanupRetries = () => {
+    const releaseMedia = () => {
       document.removeEventListener('visibilitychange', onVisible);
       retryEvents.forEach((evt) => window.removeEventListener(evt, retryPlay));
+      // Liberar el decodificador YA, no cuando el GC recoja el elemento: iOS
+      // raciona los pipelines de video y un <video> saliente todavía vivo
+      // puede dejar al de la página siguiente reproduciendo en negro.
+      video.pause();
+      video.querySelectorAll('source').forEach((source) => source.remove());
+      video.load(); // sin fuentes: aborta la red y suelta el pipeline
     };
 
     video.addEventListener('canplay', retryPlay);
     document.addEventListener('visibilitychange', onVisible);
     retryEvents.forEach((evt) => window.addEventListener(evt, retryPlay, { passive: true }));
     // Al navegar a otra página el elemento muere con el DOM viejo: soltar los
-    // listeners de window/document para no acumular reintentos huérfanos.
-    document.addEventListener('astro:before-swap', cleanupRetries, { once: true });
+    // listeners de window/document y liberar el decodificador saliente.
+    document.addEventListener('astro:before-swap', releaseMedia, { once: true });
 
     video.load();
     tryPlay();
