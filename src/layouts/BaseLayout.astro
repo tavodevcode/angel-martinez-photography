@@ -2,14 +2,50 @@
 import '@/styles/global.css';
 import { ClientRouter } from 'astro:transitions';
 import type { Locale } from '@/lib/content/types';
+import { getLocaleAlternates } from '@/lib/i18n';
 
 interface Props {
   title: string;
   description: string;
   locale?: Locale;
+  /** Ruta de la imagen para Open Graph/Twitter (relativa al site). Default: /og-image.jpg */
+  image?: string;
+  /** Tipo Open Graph. Default: 'website' */
+  ogType?: string;
 }
 
-const { title, description, locale = 'es' } = Astro.props;
+const { title, description, locale = 'es', image = '/og-image.jpg', ogType = 'website' } = Astro.props;
+
+const SITE_NAME = 'Angel Martinez Photography';
+// Astro.site viene de astro.config (site); fallback defensivo por si faltara.
+const siteOrigin = Astro.site ?? new URL('https://photos.angelmartinez.local');
+const canonical = new URL(Astro.url.pathname, siteOrigin);
+const ogImage = new URL(image, siteOrigin);
+const ogLocale = locale === 'en' ? 'en_US' : 'es_ES';
+const ogLocaleAlt = locale === 'en' ? 'es_ES' : 'en_US';
+
+// Alternates es/en para que Google no trate las dos versiones como duplicado.
+const alt = getLocaleAlternates(Astro.url.pathname);
+const alternateLinks = [
+  { hreflang: 'es', href: new URL(alt.es, siteOrigin).href },
+  { hreflang: 'en', href: new URL(alt.en, siteOrigin).href },
+  { hreflang: 'x-default', href: new URL(alt.es, siteOrigin).href },
+];
+
+// Datos estructurados: negocio de fotografía para búsqueda local / rich results.
+// Sin dirección ni teléfono reales todavía — completar cuando existan.
+const structuredData = {
+  '@context': 'https://schema.org',
+  '@type': 'ProfessionalService',
+  '@id': siteOrigin.href,
+  name: SITE_NAME,
+  description,
+  url: siteOrigin.href,
+  image: ogImage.href,
+  areaServed: 'Ciudad de México',
+  founder: { '@type': 'Person', name: 'Angel Martinez' },
+  sameAs: ['https://instagram.com', 'https://behance.net'],
+};
 ---
 
 <!doctype html>
@@ -20,6 +56,36 @@ const { title, description, locale = 'es' } = Astro.props;
     <title>{title}</title>
     <meta name="description" content={description} />
     <meta name="generator" content={Astro.generator} />
+    <meta name="theme-color" content="#000000" />
+    <link rel="canonical" href={canonical.href} />
+    {alternateLinks.map((link) => (
+      <link rel="alternate" hreflang={link.hreflang} href={link.href} />
+    ))}
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+    <link rel="sitemap" href="/sitemap-index.xml" />
+
+    {/* Open Graph — miniatura al compartir en WhatsApp/Facebook/Instagram */}
+    <meta property="og:type" content={ogType} />
+    <meta property="og:site_name" content={SITE_NAME} />
+    <meta property="og:title" content={title} />
+    <meta property="og:description" content={description} />
+    <meta property="og:url" content={canonical.href} />
+    <meta property="og:image" content={ogImage.href} />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:image:alt" content={SITE_NAME} />
+    <meta property="og:locale" content={ogLocale} />
+    <meta property="og:locale:alternate" content={ogLocaleAlt} />
+
+    {/* Twitter / X */}
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content={title} />
+    <meta name="twitter:description" content={description} />
+    <meta name="twitter:image" content={ogImage.href} />
+
+    <script is:inline type="application/ld+json" set:html={JSON.stringify(structuredData)} />
+
     <ClientRouter fallback="animate" />
     <script is:inline>
       // Marca JS disponible antes del primer paint: los estados ocultos de
@@ -55,14 +121,103 @@ const { title, description, locale = 'es' } = Astro.props;
           },
           { threshold: 0.12, rootMargin: '0px 0px -8% 0px' },
         );
+        const viewportBottom = window.innerHeight * 0.92; // espeja el rootMargin -8%
         targets.forEach((el) => {
           const trigger = el.hasAttribute('data-rise') && el.parentElement ? el.parentElement : el;
+          // Lo que ya está en viewport se revela de inmediato, sin esperar el
+          // primer callback del observer; el IO queda solo para lo below-fold.
+          const rect = trigger.getBoundingClientRect();
+          if (rect.top < viewportBottom && rect.bottom > 0) {
+            el.classList.add('is-visible');
+            return;
+          }
           map.set(trigger, el);
           io.observe(trigger);
         });
       };
 
-      document.addEventListener('astro:page-load', initReveal);
+      // En carga inicial revela de inmediato; tras una navegación espera a que
+      // la view transition (0.34s) termine para no competir con ella por frames
+      // (importante en móviles de alta resolución).
+      // Rastreo de la ruta previa (sessionStorage) para que el enlace "volver"
+      // pueda restaurar el scroll. El botón atrás del navegador ya restaura la
+      // posición vía ClientRouter; un <a href> de "volver" es navegación hacia
+      // adelante y caería al top. Si detectamos que venimos justo de esa página,
+      // hacemos history.back() para reusar esa restauración.
+      const trackNav = () => {
+        try {
+          const current = sessionStorage.getItem('nav:current');
+          sessionStorage.setItem('nav:prev', current ?? '');
+          sessionStorage.setItem('nav:current', location.pathname);
+        } catch {
+          /* sessionStorage no disponible (modo privado): degrada a navegación normal */
+        }
+      };
+      const stripSlash = (path: string) => path.replace(/\/+$/, '') || '/';
+      // Captura para correr antes del listener del ClientRouter y poder cancelarlo.
+      document.addEventListener(
+        'click',
+        (event) => {
+          const link = event.target instanceof Element ? event.target.closest('[data-back-link]') : null;
+          if (!link) return;
+          if (event.defaultPrevented || event.button !== 0 || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return;
+          let prev = '';
+          try {
+            prev = sessionStorage.getItem('nav:prev') ?? '';
+          } catch {
+            /* noop */
+          }
+          const target = new URL(link.getAttribute('href') ?? '/', location.origin).pathname;
+          if (prev && stripSlash(prev) === stripSlash(target) && window.history.length > 1) {
+            event.preventDefault();
+            window.history.back();
+          }
+        },
+        { capture: true },
+      );
+
+      // En móvil la view transition es un cross-fade sin morph de imagen que
+      // cubra el hueco. Si difiriéramos el reveal 360ms, la página destino se
+      // captura con los titulares y la grilla en blanco y el contenido "salta"
+      // al terminar el fade. Se detecta ese caso para revelar distinto.
+      const coarseVT = window.matchMedia('(hover: none), (pointer: coarse), (max-width: 900px)');
+
+      let navigated = false;
+      let softTimer = 0;
+      document.addEventListener('astro:after-swap', () => {
+        navigated = true;
+        // El ClientRouter reemplaza los atributos de <html> con los del nuevo
+        // documento y los scripts inline no se re-ejecutan: hay que restaurar
+        // la marca has-js o los estados ocultos de [data-reveal] no aplican.
+        document.documentElement.classList.add('has-js');
+        // Móvil: revelar el contenido above-fold AQUÍ, antes del snapshot, y
+        // SIN animar (vt-reveal-soft = transition:none). Queda compuesto en el
+        // snapshot y el movimiento lo da el cross-fade de página. Predecible en
+        // Safari y Chrome (no depende de cómo cada motor compone la capa "new").
+        if (coarseVT.matches) {
+          window.clearTimeout(softTimer); // no desactivar el modo instantáneo a mitad de otra navegación
+          document.documentElement.classList.add('vt-reveal-soft');
+          initReveal();
+        }
+      });
+      document.addEventListener('astro:page-load', () => {
+        trackNav();
+        if (!navigated) {
+          initReveal();
+        } else if (coarseVT.matches) {
+          // Tras aterrizar, restaura las transiciones base para que los reveals
+          // below-fold animen al hacer scroll. Arriba ya quedó snapped, así que
+          // quitar la clase no re-anima nada (fue instantáneo, no un keyframe).
+          // setTimeout y no rAF: rAF se pausa en tabs en segundo plano.
+          softTimer = window.setTimeout(() => document.documentElement.classList.remove('vt-reveal-soft'), 500);
+        } else {
+          // Desktop: el morph de imagen cubre la transición, así que el reveal
+          // animado se difiere hasta que la view transition (0.34s) termina.
+          // Higiene por si el viewport pasó de móvil a desktop en la sesión.
+          document.documentElement.classList.remove('vt-reveal-soft');
+          window.setTimeout(initReveal, 360);
+        }
+      });
     </script>
   </body>
 </html>

@@ -7,9 +7,12 @@ interface Props {
 }
 
 const { hero } = Astro.props;
+const heroVideo = hero.video;
 ---
 
 <section class="relative flex h-[min(800px,92svh)] flex-col justify-between overflow-hidden" aria-label={hero.eyebrow}>
+  {/* Poster/fallback: imagen responsive optimizada (LCP). Siempre presente; el
+      video se monta encima solo cuando el dispositivo puede reproducirlo. */}
   <Picture
     src={hero.image}
     alt={hero.imageAlt}
@@ -18,24 +21,187 @@ const { hero } = Astro.props;
     formats={['avif', 'webp']}
     loading="eager"
     fetchpriority="high"
-    class="anim-kenburns absolute inset-0 h-full w-full object-cover"
+    data-hero-poster
+    class="hero-media anim-kenburns absolute inset-0 h-full w-full object-cover transition-opacity duration-700 ease-out motion-reduce:transition-none"
   />
-  <div class="absolute inset-0 bg-black/30" aria-hidden="true"></div>
+  {
+    heroVideo && (
+      <video
+        data-hero-video
+        data-src-mp4={heroVideo.mp4}
+        data-src-webm={heroVideo.webm}
+        class="hero-media absolute inset-0 h-full w-full object-cover opacity-0 transition-opacity duration-700 ease-out motion-reduce:transition-none"
+        muted
+        loop
+        playsinline
+        preload="none"
+        aria-hidden="true"
+        tabindex="-1"
+      />
+    )
+  }
+  {/* Tratamiento del video: scrim para la nav arriba, viñeta radial (profundidad)
+      y grano de película (textura). El fundido inferior lo hace la máscara de
+      .hero-media, que disuelve el video hacia el negro del fondo. */}
+  <div class="pointer-events-none absolute inset-0 bg-gradient-to-b from-black/65 via-black/10 to-transparent" aria-hidden="true"></div>
+  <div class="pointer-events-none absolute inset-0 hero-vignette" aria-hidden="true"></div>
+  <div class="pointer-events-none absolute inset-0 hero-grain" aria-hidden="true"></div>
 
   <div class="relative z-10 flex items-start justify-between gap-6 px-6 pt-28 lg:px-12 lg:pt-32">
-    <p data-reveal class="font-caption text-[11px] uppercase tracking-[0.24em] text-white">{hero.eyebrow}</p>
-    <p data-reveal class="hidden font-caption text-[11px] uppercase tracking-[0.24em] text-white sm:block" style="--reveal-delay:120ms">{hero.labelRight}</p>
+    <p data-reveal class="hero-legible font-caption text-[11px] uppercase tracking-[0.24em] text-white">{hero.eyebrow}</p>
+    <p data-reveal class="hero-legible hidden font-caption text-[11px] uppercase tracking-[0.24em] text-white sm:block" style="--reveal-delay:120ms">{hero.labelRight}</p>
   </div>
 
   <div class="relative z-10 flex justify-center px-6">
-    <p data-reveal class="w-[460px] max-w-full text-center font-body text-[17px] font-medium leading-[1.65] text-white" style="--reveal-delay:200ms">
+    <p data-reveal class="hero-legible w-[460px] max-w-full text-center font-body text-[17px] font-medium leading-[1.65] text-white" style="--reveal-delay:200ms">
       {hero.description}
     </p>
   </div>
 
   <div class="relative z-10 flex justify-center overflow-hidden">
-    <h1 data-rise class="whitespace-nowrap text-center font-display text-[16.6vw] uppercase leading-[0.84] text-white" style="--reveal-delay:120ms">
+    <h1 data-rise class="hero-legible whitespace-nowrap text-center font-display text-[16.6vw] uppercase leading-[0.84] text-white" style="--reveal-delay:120ms">
       {hero.title}
     </h1>
   </div>
 </section>
+
+<script>
+  // Hero-video estilo Apple Music: clip corto, silenciado, en loop sobre la
+  // imagen poster. Sigue el patrón del repo (JS vanilla + astro:page-load).
+  //
+  // Con el loop optimizado (<1 MB) el video se carga también en móvil; el único
+  // gate es prefers-reduced-motion, donde se respeta la preferencia y se queda
+  // la imagen poster. El <source> se inyecta tras pasar ese gate; si el archivo
+  // no existe o el navegador bloquea el autoplay (p. ej. Modo de bajo consumo
+  // en iOS), el video nunca pinta un cuadro y el poster manda.
+  function initHeroVideo() {
+    const mounted = document.querySelector<HTMLVideoElement>('[data-hero-video]');
+    if (!mounted || mounted.dataset.heroReady) return;
+
+    const canPlay = window.matchMedia('(prefers-reduced-motion: no-preference)').matches;
+    if (!canPlay) return;
+
+    // Tras una navegación del ClientRouter este <video> no lo creó el parser
+    // del documento vivo: llega adoptado del documento inerte de DOMParser. En
+    // Safari/iOS un media element adoptado puede perder su capa de video —
+    // "reproduce" (currentTime avanza, readyState sube) pero compone negro.
+    // Recrearlo con cloneNode lo instancia en el documento vivo y estrena
+    // pipeline de decodificación. En la carga inicial es inocuo: todavía no
+    // tiene <source> ni listeners.
+    const video = mounted.cloneNode(true) as HTMLVideoElement;
+    mounted.replaceWith(video);
+    video.dataset.heroReady = 'true';
+
+    const { srcWebm, srcMp4 } = video.dataset;
+    // WebM primero (mejor compresión), MP4 como respaldo universal.
+    if (srcWebm) {
+      const source = document.createElement('source');
+      source.src = srcWebm;
+      source.type = 'video/webm';
+      video.appendChild(source);
+    }
+    if (srcMp4) {
+      const source = document.createElement('source');
+      source.src = srcMp4;
+      source.type = 'video/mp4';
+      video.appendChild(source);
+    }
+
+    // El video solo TAPA al poster mientras pinta cuadros de verdad. La señal
+    // dura es requestVideoFrameCallback: dispara únicamente cuando un cuadro
+    // se COMPUSO en pantalla. currentTime/readyState no bastan — en iOS el
+    // reloj puede avanzar con la capa de video muerta y el hero quedaba negro
+    // al volver a la home. Sin rVFC (iOS <15.4) se degrada a currentTime>0.
+    // Si el autoplay se bloquea o el sistema pausa el video (Modo de bajo
+    // consumo, segundo plano), vuelve el poster: el hero NUNCA queda en negro.
+    // El poster oculto evita el "fantasma" que la máscara del video dejaría
+    // ver por debajo mientras reproduce.
+    const poster = document.querySelector<HTMLElement>('[data-hero-poster]');
+    const supportsVFC = 'requestVideoFrameCallback' in HTMLVideoElement.prototype;
+    let lastFrameAt = 0; // instante del último cuadro compuesto (vía rVFC)
+    let videoShown = false;
+    const syncLayers = () => {
+      // "Pinta" = hubo cuadro compuesto hace <1s. No es un flag pegajoso a
+      // propósito: si la capa muere a mitad de la vida de la página con el
+      // reloj corriendo, el siguiente timeupdate (~250ms) devuelve el poster.
+      const painting = !supportsVFC || performance.now() - lastFrameAt < 1000;
+      const rendering =
+        painting && !video.paused && !video.ended && video.currentTime > 0 && video.readyState >= 2;
+      if (rendering === videoShown) return;
+      videoShown = rendering;
+      video.classList.toggle('opacity-0', !rendering); // video visible solo si pinta
+      poster?.classList.toggle('opacity-0', rendering); // el poster cede solo entonces
+    };
+    // timeupdate confirma avance del reloj; pause/ended/emptied devuelven el
+    // poster. Cubre el arranque y las pausas del sistema.
+    ['timeupdate', 'playing', 'pause', 'ended', 'emptied'].forEach((evt) =>
+      video.addEventListener(evt, syncLayers),
+    );
+    if (supportsVFC) {
+      const onFrame = () => {
+        lastFrameAt = performance.now();
+        syncLayers();
+        video.requestVideoFrameCallback(onFrame); // el callback es de un solo uso: re-armar
+      };
+      video.requestVideoFrameCallback(onFrame);
+    }
+    // Sondeo acotado para revelar al primer cuadro sin esperar a timeupdate
+    // (~250ms). Si nunca pinta, se rinde y el poster manda; timeupdate/rVFC
+    // siguen cubriendo un arranque tardío (tras interacción del usuario).
+    let polls = 0;
+    const pollUntilShown = () => {
+      if (!video.isConnected) return; // la página ya se fue: morir en silencio
+      syncLayers();
+      if (!videoShown && (polls += 1) < 600) requestAnimationFrame(pollUntilShown);
+    };
+
+    video.muted = true; // requerido para autoplay; refuerza el atributo.
+    video.autoplay = true; // autoplay nativo: más fiable que un solo .play().
+    video.preload = 'auto';
+
+    const tryPlay = () => {
+      const playback = video.play();
+      if (playback && typeof playback.catch === 'function') playback.catch(() => {});
+    };
+
+    // Red de seguridad: si el navegador bloquea el play() inicial, reintenta
+    // cuando haya datos (canplay), en cada interacción y al volver a primer
+    // plano. No se usa { once: true }: al volver a esta página el ClientRouter
+    // restaura el scroll y ese evento programático consumiría el único
+    // reintento antes de que el video esté listo. Los reintentos viven toda la
+    // página (no se limpian al primer "playing"): si el navegador pausa el
+    // video al ir a segundo plano, el siguiente toque/scroll lo reanuda. El
+    // guard de paused evita spamear (paused vuelve a true si play() es
+    // rechazado; queda false mientras hay un play pendiente).
+    const retryPlay = () => {
+      if (video.paused) tryPlay();
+    };
+    const onVisible = () => {
+      if (!document.hidden) retryPlay();
+    };
+    const retryEvents = ['pointerdown', 'keydown', 'scroll', 'touchstart'] as const;
+    const releaseMedia = () => {
+      document.removeEventListener('visibilitychange', onVisible);
+      retryEvents.forEach((evt) => window.removeEventListener(evt, retryPlay));
+      // Liberar el decodificador YA, no cuando el GC recoja el elemento: iOS
+      // raciona los pipelines de video y un <video> saliente todavía vivo
+      // puede dejar al de la página siguiente reproduciendo en negro.
+      video.pause();
+      video.querySelectorAll('source').forEach((source) => source.remove());
+      video.load(); // sin fuentes: aborta la red y suelta el pipeline
+    };
+
+    video.addEventListener('canplay', retryPlay);
+    document.addEventListener('visibilitychange', onVisible);
+    retryEvents.forEach((evt) => window.addEventListener(evt, retryPlay, { passive: true }));
+    // Al navegar a otra página el elemento muere con el DOM viejo: soltar los
+    // listeners de window/document y liberar el decodificador saliente.
+    document.addEventListener('astro:before-swap', releaseMedia, { once: true });
+
+    video.load();
+    tryPlay();
+    requestAnimationFrame(pollUntilShown);
+  }
+
+  document.addEventListener('astro:page-load', initHeroVideo);
+</script>

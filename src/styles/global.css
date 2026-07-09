@@ -1,6 +1,5 @@
 @import '@fontsource/anton';
 @import '@fontsource-variable/geist';
-@import '@fontsource-variable/inter';
 @import '@fontsource/ibm-plex-mono';
 
 @tailwind base;
@@ -40,6 +39,18 @@
   }
 }
 
+/* Los elementos con view-transition-name (los morphs de imagen card → hero) se
+   pintan en una top layer del navegador, por encima incluso del z-50 del header.
+   Para que el nav no quede tapado durante la transición se le da su propio grupo
+   con z-index máximo, así se mantiene siempre al frente mientras la imagen morfea. */
+[data-floating-nav] {
+  view-transition-name: site-header;
+}
+
+::view-transition-group(site-header) {
+  z-index: 2147483647;
+}
+
 html,
 body {
   margin: 0;
@@ -69,16 +80,22 @@ main {
   min-height: 100vh;
 }
 
+/* main sin fondo propio: el <body> aporta el negro. Así la línea decorativa,
+   que va detrás (z-[-1] en SiteScaffold), asoma por los huecos del contenido. */
 .soft-grid {
-  background-color: #000000;
+  background-color: transparent;
 }
 
 .section-rule {
   border-top: 1px solid rgba(255, 255, 255, 0.12);
 }
 
+/* Título monumental por página. Antes compartían un view-transition-name común
+   y el navegador los morfeaba entre páginas, pero morfear textos distintos
+   (p.ej. SERVICIOS ↔ FOTOGRAFIA DE BODAS) se veía como un solapamiento raro.
+   Ahora cada título entra/sale con el fundido de ventana, mucho más limpio. */
 .vt-page-title {
-  view-transition-name: page-title;
+  view-transition-name: none;
 }
 
 /* ---- Animaciones de scroll (IntersectionObserver añade .is-visible) ---- */
@@ -90,7 +107,6 @@ main {
     opacity 0.85s cubic-bezier(0.22, 1, 0.36, 1),
     transform 0.85s cubic-bezier(0.22, 1, 0.36, 1);
   transition-delay: var(--reveal-delay, 0ms);
-  will-change: opacity, transform;
 }
 
 .has-js [data-reveal].is-visible {
@@ -103,28 +119,44 @@ main {
   transform: translateY(115%);
   transition: transform 1.05s cubic-bezier(0.16, 1, 0.3, 1);
   transition-delay: var(--reveal-delay, 0ms);
-  will-change: transform;
 }
 
 .has-js [data-rise].is-visible {
   transform: none;
 }
 
-/* Panel del menú móvil: colapsa con transición de altura + opacidad. */
+/* Tras navegar en móvil, el contenido above-fold se revela SIN animación por
+   elemento: se presenta ya compuesto en el snapshot de la view transition y el
+   movimiento lo aporta el cross-fade de página (vt-window-in, una sola capa).
+   Antes se animaba cada elemento "dentro" de la transición, pero eso dependía
+   de que el motor tratara la capa "new" como render vivo — Chrome sí, Safari
+   muestra un snapshot y se veía saltar/lento. Instantáneo es idéntico en ambos.
+   Las transiciones base vuelven tras aterrizar (BaseLayout quita la clase) para
+   que los reveals por scroll sí animen. */
+.vt-reveal-soft [data-reveal],
+.vt-reveal-soft [data-rise] {
+  transition: none !important;
+}
+
+/* Panel del menú móvil: overlay full-screen opaco (el fondo semitransparente
+   se veía mal en móvil, donde .nav-glass no tiene backdrop-filter). La barra
+   superior del header (z-10) queda por encima para poder cerrar con MENU. */
 .mobile-menu-panel {
-  max-height: 0;
+  position: fixed;
+  inset: 0;
+  background: var(--bg);
   opacity: 0;
-  overflow: hidden;
   pointer-events: none;
+  transform: translateY(-12px);
   transition:
-    max-height 0.34s cubic-bezier(0.22, 1, 0.36, 1),
-    opacity 0.34s ease;
+    opacity 0.3s ease,
+    transform 0.34s cubic-bezier(0.22, 1, 0.36, 1);
 }
 
 .mobile-menu-panel.is-open {
-  max-height: 22rem;
   opacity: 1;
   pointer-events: auto;
+  transform: none;
 }
 
 /* Zoom lento tipo Ken Burns en imágenes de fondo hero. */
@@ -141,14 +173,70 @@ main {
   animation: ken-burns 9s cubic-bezier(0.16, 1, 0.3, 1) both;
 }
 
-/* Zoom sutil al pasar el cursor sobre una foto (wrapper con [data-zoom] + overflow-hidden). */
-[data-zoom] img {
-  transition: transform 0.9s cubic-bezier(0.22, 1, 0.36, 1);
-  will-change: transform;
+/* --- Tratamiento cinematográfico del hero-video --- */
+
+/* Viñeta radial: foco al centro, esquinas oscuras (profundidad). */
+.hero-vignette {
+  background: radial-gradient(120% 78% at 50% 42%, transparent 34%, rgba(0, 0, 0, 0.55) 100%);
 }
 
-[data-zoom]:hover img {
-  transform: scale(1.05);
+/* Grano de película: ruido SVG en tile, mezcla suave sobre el metraje. */
+.hero-grain {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.82' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  background-size: 160px 160px;
+  opacity: 0.14;
+  mix-blend-mode: soft-light;
+}
+
+/* Sombra sutil para separar el texto blanco del metraje de fondo. */
+.hero-legible {
+  text-shadow: 0 1px 22px rgba(0, 0, 0, 0.5);
+}
+
+/* Fundido inferior del video/poster: la imagen se disuelve hacia transparente
+   y revela el negro del fondo, para que el metraje no corte en seco contra el
+   wordmark y la sección siguiente. Se funde sin costura. */
+.hero-media {
+  -webkit-mask-image: linear-gradient(to bottom, #000 54%, transparent 93%);
+  mask-image: linear-gradient(to bottom, #000 54%, transparent 93%);
+}
+
+/* Zoom sutil al pasar el cursor sobre una foto (wrapper con [data-zoom] + overflow-hidden).
+   Solo con puntero real: en touch el primer tap deja :hover pegado y la foto
+   se queda zoomeada. */
+@media (hover: hover) and (pointer: fine) {
+  [data-zoom] img {
+    transition: transform 0.9s cubic-bezier(0.22, 1, 0.36, 1);
+  }
+
+  [data-zoom]:hover img {
+    transform: scale(1.05);
+  }
+}
+
+/* Nav flotante: estados de fondo/borde/blur (JS añade .is-scrolled al hacer scroll). */
+.nav-glass {
+  background-color: rgba(0, 0, 0, 0.4);
+  border-color: transparent;
+  -webkit-backdrop-filter: blur(12px);
+  backdrop-filter: blur(12px);
+  transition:
+    background-color 0.3s ease,
+    border-color 0.3s ease;
+}
+
+.nav-glass.is-scrolled {
+  background-color: rgba(0, 0, 0, 0.85);
+  border-color: rgba(255, 255, 255, 0.12);
+  -webkit-backdrop-filter: blur(24px);
+  backdrop-filter: blur(24px);
+}
+
+/* Durante una navegación se suprime la transición del nav: su cambio de estado
+   (scrolled ↔ normal) se snap-ea en vez de animar un fade de 0.3s que competía
+   con la view transition y se veía raro al aterrizar en el detalle. */
+.nav-glass.nav-no-transition {
+  transition: none;
 }
 
 /* Subrayado animado en enlaces de navegación. */
@@ -160,8 +248,10 @@ main {
   transition: background-size 0.4s cubic-bezier(0.22, 1, 0.36, 1);
 }
 
-.link-underline:hover {
-  background-size: 100% 1px;
+@media (hover: hover) and (pointer: fine) {
+  .link-underline:hover {
+    background-size: 100% 1px;
+  }
 }
 
 @media (hover: none), (pointer: coarse), (max-width: 900px) {
@@ -171,26 +261,54 @@ main {
     box-shadow: none !important;
   }
 
+  /* En móvil el movimiento lo da el fundido de página, no morphs por-elemento.
+     El entrante desliza levemente hacia arriba: es UNA sola capa compuesta (el
+     snapshot de <main>), un translate barato para el GPU — distinto de escalar
+     snapshots por-elemento a 3x, que sí era caro. Da vida a la navegación sin
+     que se sienta plana. El saliente solo se desvanece. */
   @keyframes vt-window-in {
     from {
       opacity: 0;
-      transform: translateY(8px) scale(0.996);
+      transform: translateY(16px);
     }
     to {
       opacity: 1;
-      transform: translateY(0) scale(1);
+      transform: none;
     }
   }
 
   @keyframes vt-window-out {
     from {
       opacity: 1;
-      transform: translateY(0) scale(1);
     }
     to {
       opacity: 0.08;
-      transform: translateY(-6px) scale(1.002);
     }
+  }
+
+  /* Sin morphs por-elemento en móvil: cada view-transition-name obliga a
+     Safari a snapshotear ese elemento a resolución física (los titulares de
+     22–32vw con nowrap pueden medir varias pantallas de ancho). El fade de
+     página cubre la transición. `main [data-astro-transition-scope]` alcanza
+     solo los morphs internos (imágenes de services/portfolio); el scope del
+     propio <main> (animación de ventana) no se toca. */
+  .vt-page-title,
+  [data-floating-nav],
+  main [data-astro-transition-scope] {
+    view-transition-name: none !important;
+  }
+
+  /* Ken Burns fuera en móvil: 9s de scale sobre una imagen full-viewport
+     compite con la decodificación del LCP, los reveals y la view transition. */
+  .anim-kenburns {
+    animation: none;
+  }
+
+  /* Feedback táctil inmediato al tocar un link de contenido: sustituye la
+     señal que en desktop dan los estados hover. */
+  main a:active {
+    opacity: 0.75;
+    transition: opacity 0.12s ease;
   }
 }
 

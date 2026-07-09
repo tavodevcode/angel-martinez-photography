@@ -38,6 +38,13 @@ export const marketingContentByLocale: Record<Locale, MarketingContent> = {
       imageAlt: 'Escena editorial nocturna',
       ctaLabel: 'Agendar sesion',
       ctaHref: '/contact/',
+      // Clip del hero en public/videos/ (loop corto optimizado). WebM primero
+      // por compresión, MP4 como respaldo universal. Regenerar con `pnpm optimize:video`.
+      // OJO: el clip actual es un placeholder — reemplázalo por metraje propio o licenciado.
+      video: {
+        webm: '/videos/hero.webm',
+        mp4: '/videos/hero.mp4',
+      },
     },
     about: {
       sectionLabel: 'Nosotros — 01',
@@ -320,6 +327,11 @@ export const marketingContentByLocale: Record<Locale, MarketingContent> = {
       imageAlt: 'Editorial night scene',
       ctaLabel: 'Book a Session',
       ctaHref: '/en/contact/',
+      // Mismo clip que la home en español (public/videos/, loop optimizado).
+      video: {
+        webm: '/videos/hero.webm',
+        mp4: '/videos/hero.mp4',
+      },
     },
     about: {
       sectionLabel: 'About — 01',
