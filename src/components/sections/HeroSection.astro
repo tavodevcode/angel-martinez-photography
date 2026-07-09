@@ -98,36 +98,35 @@ const heroVideo = hero.video;
       video.appendChild(source);
     }
 
-    // Mantener la imagen estática (poster) hasta que el video esté DESCARGADO lo
-    // suficiente para reproducirse sin cortes (readyState 4 = HAVE_ENOUGH_DATA).
-    // Recién ahí se muestra el video y se funde el poster: si se dejara visible
-    // por debajo, la máscara del video lo transparentaría y se vería como "foto
-    // fantasma". Se chequea readyState en vez de confiar solo en el evento
-    // canplaythrough, que puede emitirse antes de enganchar el listener si el
-    // archivo ya está en caché.
+    // El video solo TAPA al poster mientras pinta cuadros de verdad. La
+    // condición dura es currentTime>0: ni readyState ni !paused bastan — en iOS
+    // el video puede quedar "no pausado" pero congelado en el cuadro 0 (negro).
+    // Si el autoplay se bloquea (volver a la home con navegación suave) o el
+    // sistema lo pausa (Modo de bajo consumo, segundo plano), vuelve el poster:
+    // el hero NUNCA queda en negro. El poster oculto evita el "fantasma" que la
+    // máscara del video dejaría ver por debajo mientras reproduce.
     const poster = document.querySelector<HTMLElement>('[data-hero-poster]');
-    let revealed = false;
-    const revealVideo = () => {
-      if (revealed) return;
-      revealed = true;
-      video.classList.remove('opacity-0'); // muestra el video
-      poster?.classList.add('opacity-0'); // funde el poster para evitar el fantasma
+    let videoShown = false;
+    const syncLayers = () => {
+      const rendering =
+        !video.paused && !video.ended && video.currentTime > 0 && video.readyState >= 2;
+      if (rendering === videoShown) return;
+      videoShown = rendering;
+      video.classList.toggle('opacity-0', !rendering); // video visible solo si pinta
+      poster?.classList.toggle('opacity-0', rendering); // el poster cede solo entonces
     };
-    // Se sondea readyState con requestAnimationFrame porque los eventos de media
-    // (canplaythrough) no son fiables: si el archivo ya está en caché pueden
-    // emitirse antes de enganchar el listener. readyState 4 = HAVE_ENOUGH_DATA
-    // (descargado lo suficiente para reproducir sin cortes). Con tope para no
-    // sondear indefinidamente: si nunca descarga, se queda el poster.
-    // OJO: se exige además !paused — si el autoplay fue bloqueado (p. ej. al
-    // volver a esta página con una navegación suave, donde play() corre sin un
-    // gesto "fresco"), revelar aquí mostraría un fotograma congelado. En ese
-    // caso el poster se queda hasta que un reintento de play() prospere.
-    let frames = 0;
-    const waitUntilReady = () => {
-      if (revealed) return;
-      if (video.readyState >= 4 && !video.paused) return revealVideo();
-      if ((frames += 1) > 1800) return; // ~30s visibles; luego se rinde y deja el poster
-      requestAnimationFrame(waitUntilReady);
+    // timeupdate confirma avance real (primer cuadro pintado); pause/ended/emptied
+    // devuelven el poster. Cubre el arranque y las pausas del sistema.
+    ['timeupdate', 'playing', 'pause', 'ended', 'emptied'].forEach((evt) =>
+      video.addEventListener(evt, syncLayers),
+    );
+    // Sondeo acotado para revelar al primer cuadro sin esperar a timeupdate
+    // (~250ms). Si nunca avanza, se rinde y el poster manda; timeupdate seguirá
+    // cubriendo un arranque tardío (tras interacción del usuario).
+    let polls = 0;
+    const pollUntilShown = () => {
+      syncLayers();
+      if (!videoShown && (polls += 1) < 600) requestAnimationFrame(pollUntilShown);
     };
 
     video.muted = true; // requerido para autoplay; refuerza el atributo.
@@ -160,7 +159,6 @@ const heroVideo = hero.video;
       retryEvents.forEach((evt) => window.removeEventListener(evt, retryPlay));
     };
 
-    video.addEventListener('playing', revealVideo); // si el navegador lo reproduce, mostrarlo ya
     video.addEventListener('canplay', retryPlay);
     document.addEventListener('visibilitychange', onVisible);
     retryEvents.forEach((evt) => window.addEventListener(evt, retryPlay, { passive: true }));
@@ -170,7 +168,7 @@ const heroVideo = hero.video;
 
     video.load();
     tryPlay();
-    requestAnimationFrame(waitUntilReady);
+    requestAnimationFrame(pollUntilShown);
   }
 
   document.addEventListener('astro:page-load', initHeroVideo);

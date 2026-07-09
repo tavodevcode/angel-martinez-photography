@@ -183,17 +183,19 @@ const structuredData = {
       const coarseVT = window.matchMedia('(hover: none), (pointer: coarse), (max-width: 900px)');
 
       let navigated = false;
+      let softTimer = 0;
       document.addEventListener('astro:after-swap', () => {
         navigated = true;
         // El ClientRouter reemplaza los atributos de <html> con los del nuevo
         // documento y los scripts inline no se re-ejecutan: hay que restaurar
         // la marca has-js o los estados ocultos de [data-reveal] no aplican.
         document.documentElement.classList.add('has-js');
-        // Móvil: revelar el contenido above-fold AQUÍ, antes del snapshot. La
-        // capa "new" de la view transition es un render vivo, así que estas
-        // animaciones (los keyframes de .vt-reveal-soft) se ven DENTRO del
-        // cross-fade: la página llega animada, ni en blanco ni plana.
+        // Móvil: revelar el contenido above-fold AQUÍ, antes del snapshot, y
+        // SIN animar (vt-reveal-soft = transition:none). Queda compuesto en el
+        // snapshot y el movimiento lo da el cross-fade de página. Predecible en
+        // Safari y Chrome (no depende de cómo cada motor compone la capa "new").
         if (coarseVT.matches) {
+          window.clearTimeout(softTimer); // no desactivar el modo instantáneo a mitad de otra navegación
           document.documentElement.classList.add('vt-reveal-soft');
           initReveal();
         }
@@ -203,10 +205,11 @@ const structuredData = {
         if (!navigated) {
           initReveal();
         } else if (coarseVT.matches) {
-          // La clase vt-reveal-soft se queda: quitarla (p. ej. con un timer)
-          // cancelaría animaciones aún relevantes y el cambio de estilo
-          // re-dispararía la transición base — un "replay" visible del reveal.
-          // Los reveals por scroll usan los mismos keyframes, equivalentes.
+          // Tras aterrizar, restaura las transiciones base para que los reveals
+          // below-fold animen al hacer scroll. Arriba ya quedó snapped, así que
+          // quitar la clase no re-anima nada (fue instantáneo, no un keyframe).
+          // setTimeout y no rAF: rAF se pausa en tabs en segundo plano.
+          softTimer = window.setTimeout(() => document.documentElement.classList.remove('vt-reveal-soft'), 500);
         } else {
           // Desktop: el morph de imagen cubre la transición, así que el reveal
           // animado se difiere hasta que la view transition (0.34s) termina.
