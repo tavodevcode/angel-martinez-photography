@@ -125,13 +125,45 @@ main {
   transform: none;
 }
 
-/* Tras navegar en móvil, el contenido above-fold se revela sin animación (lo
-   activa BaseLayout en astro:after-swap): así entra dentro del cross-fade en
-   lugar de "saltar" al terminar. En desktop el morph de imagen cubre ese hueco
-   y el reveal sí se anima. */
-.vt-reveal-instant [data-reveal],
-.vt-reveal-instant [data-rise] {
-  transition: none !important;
+/* Tras navegar en móvil, el contenido above-fold se revela DURANTE el
+   cross-fade (BaseLayout lo dispara en astro:after-swap; la capa "new" de la
+   view transition es un render vivo, así que la animación se ve dentro del
+   fundido). Se usan ANIMACIONES y no las transiciones base: los cambios de
+   clase dentro del update de startViewTransition se coalescen en un solo
+   recálculo (render suprimido) y una transición no tendría estado inicial —
+   haría snap. Un keyframe no necesita antes/después: corre al reanudar el
+   render. Duraciones más cortas que las base para acompañar al fade (0.34s).
+   La clase persiste tras aterrizar (quitarla cancelaría animaciones en vuelo
+   y re-dispararía la transición base): los reveals por scroll en móvil usan
+   estos mismos keyframes en lugar de las transiciones base. */
+.vt-reveal-soft [data-reveal].is-visible {
+  animation: vt-reveal-in 0.55s cubic-bezier(0.22, 1, 0.36, 1) both;
+  animation-delay: var(--reveal-delay, 0ms);
+}
+
+.vt-reveal-soft [data-rise].is-visible {
+  animation: vt-rise-in 0.7s cubic-bezier(0.16, 1, 0.3, 1) both;
+  animation-delay: var(--reveal-delay, 0ms);
+}
+
+@keyframes vt-reveal-in {
+  from {
+    opacity: 0;
+    transform: translateY(24px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@keyframes vt-rise-in {
+  from {
+    transform: translateY(115%);
+  }
+  to {
+    transform: none;
+  }
 }
 
 /* Panel del menú móvil: overlay full-screen opaco (el fondo semitransparente

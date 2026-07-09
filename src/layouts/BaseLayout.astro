@@ -189,11 +189,12 @@ const structuredData = {
         // documento y los scripts inline no se re-ejecutan: hay que restaurar
         // la marca has-js o los estados ocultos de [data-reveal] no aplican.
         document.documentElement.classList.add('has-js');
-        // Móvil: revelar el contenido above-fold AQUÍ (antes de que el navegador
-        // capture el snapshot de la página nueva) y sin animar, para que entre
-        // completo junto al cross-fade en vez de aparecer en blanco y saltar.
+        // Móvil: revelar el contenido above-fold AQUÍ, antes del snapshot. La
+        // capa "new" de la view transition es un render vivo, así que estas
+        // animaciones (los keyframes de .vt-reveal-soft) se ven DENTRO del
+        // cross-fade: la página llega animada, ni en blanco ni plana.
         if (coarseVT.matches) {
-          document.documentElement.classList.add('vt-reveal-instant');
+          document.documentElement.classList.add('vt-reveal-soft');
           initReveal();
         }
       });
@@ -202,12 +203,15 @@ const structuredData = {
         if (!navigated) {
           initReveal();
         } else if (coarseVT.matches) {
-          // Ya revelado en after-swap; reactiva las transiciones para que los
-          // reveals below-fold vuelvan a animar al hacer scroll.
-          document.documentElement.classList.remove('vt-reveal-instant');
+          // La clase vt-reveal-soft se queda: quitarla (p. ej. con un timer)
+          // cancelaría animaciones aún relevantes y el cambio de estilo
+          // re-dispararía la transición base — un "replay" visible del reveal.
+          // Los reveals por scroll usan los mismos keyframes, equivalentes.
         } else {
           // Desktop: el morph de imagen cubre la transición, así que el reveal
           // animado se difiere hasta que la view transition (0.34s) termina.
+          // Higiene por si el viewport pasó de móvil a desktop en la sesión.
+          document.documentElement.classList.remove('vt-reveal-soft');
           window.setTimeout(initReveal, 360);
         }
       });
