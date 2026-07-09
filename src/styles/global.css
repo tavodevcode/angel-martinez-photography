@@ -125,6 +125,15 @@ main {
   transform: none;
 }
 
+/* Tras navegar en móvil, el contenido above-fold se revela sin animación (lo
+   activa BaseLayout en astro:after-swap): así entra dentro del cross-fade en
+   lugar de "saltar" al terminar. En desktop el morph de imagen cubre ese hueco
+   y el reveal sí se anima. */
+.vt-reveal-instant [data-reveal],
+.vt-reveal-instant [data-rise] {
+  transition: none !important;
+}
+
 /* Panel del menú móvil: overlay full-screen opaco (el fondo semitransparente
    se veía mal en móvil, donde .nav-glass no tiene backdrop-filter). La barra
    superior del header (z-10) queda por encima para poder cerrar con MENU. */
