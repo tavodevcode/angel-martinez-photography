@@ -118,10 +118,14 @@ const heroVideo = hero.video;
     // emitirse antes de enganchar el listener. readyState 4 = HAVE_ENOUGH_DATA
     // (descargado lo suficiente para reproducir sin cortes). Con tope para no
     // sondear indefinidamente: si nunca descarga, se queda el poster.
+    // OJO: se exige además !paused — si el autoplay fue bloqueado (p. ej. al
+    // volver a esta página con una navegación suave, donde play() corre sin un
+    // gesto "fresco"), revelar aquí mostraría un fotograma congelado. En ese
+    // caso el poster se queda hasta que un reintento de play() prospere.
     let frames = 0;
     const waitUntilReady = () => {
       if (revealed) return;
-      if (video.readyState >= 4) return revealVideo();
+      if (video.readyState >= 4 && !video.paused) return revealVideo();
       if ((frames += 1) > 1800) return; // ~30s visibles; luego se rinde y deja el poster
       requestAnimationFrame(waitUntilReady);
     };
@@ -135,16 +139,38 @@ const heroVideo = hero.video;
       if (playback && typeof playback.catch === 'function') playback.catch(() => {});
     };
 
+    // Red de seguridad: si el navegador bloquea el play() inicial, reintenta
+    // cuando haya datos (canplay), en cada interacción y al volver a primer
+    // plano. No se usa { once: true }: al volver a esta página el ClientRouter
+    // restaura el scroll y ese evento programático consumiría el único
+    // reintento antes de que el video esté listo. Los reintentos viven toda la
+    // página (no se limpian al primer "playing"): si el navegador pausa el
+    // video al ir a segundo plano, el siguiente toque/scroll lo reanuda. El
+    // guard de paused evita spamear (paused vuelve a true si play() es
+    // rechazado; queda false mientras hay un play pendiente).
+    const retryPlay = () => {
+      if (video.paused) tryPlay();
+    };
+    const onVisible = () => {
+      if (!document.hidden) retryPlay();
+    };
+    const retryEvents = ['pointerdown', 'keydown', 'scroll', 'touchstart'] as const;
+    const cleanupRetries = () => {
+      document.removeEventListener('visibilitychange', onVisible);
+      retryEvents.forEach((evt) => window.removeEventListener(evt, retryPlay));
+    };
+
     video.addEventListener('playing', revealVideo); // si el navegador lo reproduce, mostrarlo ya
+    video.addEventListener('canplay', retryPlay);
+    document.addEventListener('visibilitychange', onVisible);
+    retryEvents.forEach((evt) => window.addEventListener(evt, retryPlay, { passive: true }));
+    // Al navegar a otra página el elemento muere con el DOM viejo: soltar los
+    // listeners de window/document para no acumular reintentos huérfanos.
+    document.addEventListener('astro:before-swap', cleanupRetries, { once: true });
+
     video.load();
     tryPlay();
     requestAnimationFrame(waitUntilReady);
-
-    // Red de seguridad: si el navegador bloquea el autoplay inicial (pestaña sin
-    // foco, política del navegador), reintenta a la primera interacción del usuario.
-    ['pointerdown', 'keydown', 'scroll', 'touchstart'].forEach((evt) =>
-      window.addEventListener(evt, tryPlay, { once: true, passive: true }),
-    );
   }
 
   document.addEventListener('astro:page-load', initHeroVideo);
